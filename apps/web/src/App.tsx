@@ -14,7 +14,6 @@ import { ToastProvider, useToast } from './components/Toast.js';
 import { CropAdjustModal, CropData } from './components/CropAdjustModal.js';
 
 function BingoApp() {
-  const [darkMode, setDarkMode] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
@@ -37,7 +36,7 @@ function BingoApp() {
     tileTitle: ''
   });
 
-  const { participant, card, setCard, isLoading, error, login, logout, isAuthenticated } = useAuth();
+  const { participant, card, isLoading, error, login, logout, isAuthenticated } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const {
@@ -53,22 +52,6 @@ function BingoApp() {
     saveError,
     lastSavedTime
   } = useBingoCard(card);
-
-  // Sync activeCard back to Auth state
-  useEffect(() => {
-    if (activeCard) {
-      setCard(activeCard);
-    }
-  }, [activeCard, setCard]);
-
-  // Dark mode class toggle
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
 
   // Direct URL navigation for Organizer Portal: /admin or ?admin=true or #admin
   useEffect(() => {
@@ -163,17 +146,15 @@ function BingoApp() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden bg-[#F8F9FA] text-[#202124]">
       {/* Background Dots */}
-      <div className="fixed inset-0 pointer-events-none ambient-dots-bg opacity-15 dark:opacity-10 z-0" />
+      <div className="fixed inset-0 pointer-events-none ambient-dots-bg opacity-15 z-0" />
 
       {/* Confetti Celebration */}
       <ConfettiCanvas active={showConfetti} />
 
       {/* Navigation */}
       <Navbar
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
         onOpenRulesModal={() => setIsRulesModalOpen(true)}
       />
 
@@ -257,8 +238,8 @@ function BingoApp() {
       />
 
       {/* Footer */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey dark:text-gray-500 font-medium border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-2">
-        <span>Google Cloud Developer Community Day 2026 • Built for community, learning, and celebration.</span>
+      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey font-medium border-t border-gray-200 flex items-center justify-center gap-2">
+        <span>Google Cloud Developer Community Day 2026</span>
         <a
           href="?admin=true"
           onClick={(e) => {
@@ -266,7 +247,7 @@ function BingoApp() {
             setIsAdminModalOpen(true);
             window.history.pushState({}, '', '?admin=true');
           }}
-          className="text-gray-400 dark:text-gray-600 hover:text-google-blue hover:underline transition"
+          className="text-gray-400 hover:text-google-blue hover:underline transition"
           title="Direct link for event organizers"
         >
           [Organizer Portal]

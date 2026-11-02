@@ -20,20 +20,20 @@ export const SubmitModal: React.FC<SubmitModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full max-w-md bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-6 shadow-brutal-lg relative">
+      <div className="w-full max-w-md bg-white border-3 border-google-dark rounded-3xl p-6 shadow-brutal-lg relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 text-google-dark" />
         </button>
 
         <div className="w-14 h-14 rounded-2xl bg-amber-100 border-2 border-google-dark flex items-center justify-center text-2xl mx-auto mb-4 shadow-brutal">
           <AlertTriangle className="w-7 h-7 text-amber-600" />
         </div>
 
-        <h3 className="text-xl font-black text-center text-google-dark dark:text-white mb-2">
+        <h3 className="text-xl font-black text-center text-google-dark mb-2">
           Submit Bingo Card?
         </h3>
 
@@ -41,7 +41,7 @@ export const SubmitModal: React.FC<SubmitModalProps> = ({
           ID: {bingoId}
         </div>
 
-        <p className="text-xs sm:text-sm text-google-grey dark:text-gray-300 text-center mb-6 leading-relaxed">
+        <p className="text-xs sm:text-sm text-google-grey text-center mb-6 leading-relaxed">
           Once you submit, your bingo card will be <strong>finalized and locked</strong> in read-only mode for organizer review.
           You won't be able to replace or remove photos after submission.
         </p>
@@ -51,7 +51,7 @@ export const SubmitModal: React.FC<SubmitModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-google-dark dark:text-gray-200 font-bold text-xs sm:text-sm border-2 border-google-dark dark:border-white/20 rounded-xl hover:bg-gray-200 transition"
+            className="flex-1 py-3 bg-gray-100 text-google-dark font-bold text-xs sm:text-sm border-2 border-google-dark rounded-xl hover:bg-gray-200 transition cursor-pointer"
           >
             Cancel & Review
           </button>
@@ -59,7 +59,7 @@ export const SubmitModal: React.FC<SubmitModalProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="flex-1 py-3 bg-google-green text-white font-extrabold text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-google-green text-white font-extrabold text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>

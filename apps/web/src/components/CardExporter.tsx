@@ -228,45 +228,45 @@ export const CardExporter: React.FC<CardExporterProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full max-w-lg bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-6 sm:p-7 shadow-brutal-lg relative max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg bg-white border-3 border-google-dark rounded-3xl p-6 sm:p-7 shadow-brutal-lg relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
           aria-label="Close"
         >
-          <X className="w-5 h-5 text-google-dark dark:text-white" />
+          <X className="w-5 h-5 text-google-dark" />
         </button>
 
         <div className="text-center mb-5">
           <div className="w-16 h-16 rounded-2xl bg-google-blue/10 border-2 border-google-blue mx-auto mb-3 flex items-center justify-center text-google-blue shadow-sm">
             <Download className="w-8 h-8" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-google-dark dark:text-white">
+          <h3 className="text-xl sm:text-2xl font-black text-google-dark">
             Download Official A4 Card
           </h3>
-          <p className="text-xs text-google-grey dark:text-gray-400 mt-1">
+          <p className="text-xs text-google-grey mt-1">
             Exports a high-resolution 300 DPI A4 image (2482 × 3508 px) with your photos and official Bingo ID embedded.
           </p>
         </div>
 
         {/* Card Details Summary */}
-        <div className="bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl p-4 mb-6 space-y-2 text-xs">
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
-            <span className="font-bold text-google-grey dark:text-gray-400">Participant:</span>
-            <span className="font-black text-google-dark dark:text-white">{participant.name}</span>
+        <div className="bg-gray-50 border-2 border-google-dark rounded-2xl p-4 mb-6 space-y-2 text-xs">
+          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span className="font-bold text-google-grey">Participant:</span>
+            <span className="font-black text-google-dark">{participant.name}</span>
           </div>
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
-            <span className="font-bold text-google-grey dark:text-gray-400">Registered Email:</span>
-            <span className="font-mono text-google-dark dark:text-gray-200">{participant.email}</span>
+          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span className="font-bold text-google-grey">Registered Email:</span>
+            <span className="font-mono text-google-dark">{participant.email}</span>
           </div>
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
-            <span className="font-bold text-google-grey dark:text-gray-400">Official Bingo ID:</span>
-            <span className="font-mono font-black text-google-blue bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded border border-google-blue">
+          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span className="font-bold text-google-grey">Official Bingo ID:</span>
+            <span className="font-mono font-black text-google-blue bg-blue-50 px-2 py-0.5 rounded border border-google-blue">
               {card.bingo_id}
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="font-bold text-google-grey dark:text-gray-400">Card Status:</span>
+            <span className="font-bold text-google-grey">Card Status:</span>
             <span className="font-extrabold uppercase text-google-green">
               {card.status} ({card.total_completed}/9 Completed)
             </span>
@@ -278,7 +278,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           type="button"
           onClick={handleDownload}
           disabled={isExporting}
-          className="w-full py-3.5 bg-google-blue text-white font-extrabold text-sm sm:text-base border-2 border-google-dark rounded-xl flex items-center justify-center gap-2 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-60"
+          className="w-full py-3.5 bg-google-blue text-white font-extrabold text-sm sm:text-base border-2 border-google-dark rounded-xl flex items-center justify-center gap-2 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-60 cursor-pointer"
         >
           {isExporting ? (
             <>

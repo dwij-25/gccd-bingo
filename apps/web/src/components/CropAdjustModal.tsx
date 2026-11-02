@@ -168,23 +168,23 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full max-w-lg bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-4 sm:p-6 shadow-brutal-lg flex flex-col max-h-[92vh]">
+      <div className="w-full max-w-lg bg-white border-3 border-google-dark rounded-3xl p-4 sm:p-6 shadow-brutal-lg flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 mb-3">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-3">
           <div>
-            <h3 className="font-extrabold text-sm sm:text-base text-google-dark dark:text-white">
+            <h3 className="font-extrabold text-sm sm:text-base text-google-dark">
               Crop & Position Photo
             </h3>
-            <p className="text-xs text-google-grey dark:text-gray-400 truncate max-w-[260px] sm:max-w-xs">
+            <p className="text-xs text-google-grey truncate max-w-[260px] sm:max-w-xs">
               {tileTitle}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            className="p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-5 h-5 text-google-dark dark:text-white" />
+            <X className="w-5 h-5 text-google-dark" />
           </button>
         </div>
 
@@ -212,7 +212,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
         <div className="space-y-3 mt-4">
           {/* Zoom Slider */}
           <div className="flex items-center gap-3">
-            <ZoomOut className="w-4 h-4 text-google-grey dark:text-gray-400" />
+            <ZoomOut className="w-4 h-4 text-google-grey" />
             <input
               type="range"
               min={1}
@@ -220,11 +220,11 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="flex-1 accent-google-blue cursor-pointer h-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+              className="flex-1 accent-google-blue cursor-pointer h-2 bg-gray-200 rounded-lg"
               aria-label="Zoom slider"
             />
-            <ZoomIn className="w-4 h-4 text-google-grey dark:text-gray-400" />
-            <span className="text-xs font-mono font-bold w-10 text-right">{zoom.toFixed(1)}x</span>
+            <ZoomIn className="w-4 h-4 text-google-grey" />
+            <span className="text-xs font-mono font-bold w-10 text-right text-google-dark">{zoom.toFixed(1)}x</span>
           </div>
 
           {/* Action Buttons: Rotate, Fit/Fill, Reset */}
@@ -233,7 +233,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
               <button
                 type="button"
                 onClick={handleRotate}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 transition cursor-pointer"
                 title="Rotate 90 degrees"
               >
                 <RotateCw className="w-3.5 h-3.5 text-google-blue" />
@@ -243,7 +243,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
               <button
                 type="button"
                 onClick={() => setMode(m => (m === 'fill' ? 'fit' : 'fill'))}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 transition cursor-pointer"
                 title={mode === 'fill' ? "Switch to Fit (Letterbox)" : "Switch to Fill (Cover)"}
               >
                 {mode === 'fill' ? (
@@ -262,7 +262,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
               <button
                 type="button"
                 onClick={handleReset}
-                className="p-1.5 text-google-grey hover:text-google-dark dark:hover:text-white transition"
+                className="p-1.5 text-google-grey hover:text-google-dark transition cursor-pointer"
                 title="Reset crop settings"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -274,7 +274,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isProcessing}
-                className="px-4 py-2 text-xs font-bold text-google-grey hover:text-google-dark dark:hover:text-white transition"
+                className="px-4 py-2 text-xs font-bold text-google-grey hover:text-google-dark transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -282,7 +282,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
                 type="button"
                 onClick={handleConfirm}
                 disabled={isProcessing}
-                className="px-5 py-2 bg-google-green text-white font-extrabold text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center gap-1.5"
+                className="px-5 py-2 bg-google-green text-white font-extrabold text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
               >
                 {isProcessing ? (
                   <>

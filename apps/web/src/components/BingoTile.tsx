@@ -19,7 +19,7 @@ const COLOR_CLASSES = [
   'bg-tile-pink',
   'bg-tile-blue',
   'bg-tile-blue',
-  'bg-white dark:bg-gray-900', // Center GDG Logo
+  'bg-white', // Center GDG Logo
   'bg-tile-green',
   'bg-tile-green',
   'bg-tile-yellow',
@@ -64,7 +64,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className="relative aspect-[324/290] cursor-pointer select-none perspective-1000 group w-full"
+      className="relative aspect-[324/290] cursor-pointer select-none perspective-1000 w-full"
       role="button"
       tabIndex={0}
       aria-label={`Bingo challenge ${index + 1}: ${tile.title}. Status: ${isDone ? 'Completed' : 'Not finished'}`}
@@ -90,14 +90,14 @@ export const BingoTile: React.FC<BingoTileProps> = ({
         }`}
       >
         {/* ========================================================
-             FRONT FACE
+             FRONT FACE (Solid, steady, no hover float translation)
              ======================================================== */}
         <div
-          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark dark:border-white/30 p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal transition-transform group-hover:-translate-y-0.5 ${colorClass} overflow-hidden`}
+          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal ${colorClass} overflow-hidden`}
         >
           {/* Header row: Challenge # and Signal Dot */}
           <div className="flex items-center justify-between w-full relative z-10">
-            <span className="text-[10px] sm:text-xs font-black bg-white/90 dark:bg-black/60 px-1.5 py-0.5 rounded border border-google-dark dark:border-white/20">
+            <span className="text-[10px] sm:text-xs font-black bg-white/90 px-1.5 py-0.5 rounded border border-google-dark">
               #{index + 1}
             </span>
 
@@ -124,14 +124,14 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
-                <span className="font-black text-[11px] sm:text-xs text-google-dark dark:text-white mt-0.5">
+                <span className="font-black text-[11px] sm:text-xs text-google-dark mt-0.5">
                   GCCD Spirit
                 </span>
               </div>
             ) : !isDone ? (
               <div className="flex flex-col items-center justify-center px-1">
-                <i className={`fas ${tile.icon || 'fa-camera'} text-lg sm:text-xl text-google-dark dark:text-white mb-1`} />
-                <h3 className="font-extrabold text-[11px] sm:text-xs leading-tight text-google-dark dark:text-white line-clamp-2">
+                <i className={`fas ${tile.icon || 'fa-camera'} text-lg sm:text-xl text-google-dark mb-1`} />
+                <h3 className="font-extrabold text-[11px] sm:text-xs leading-tight text-google-dark line-clamp-2">
                   {tile.title}
                 </h3>
               </div>
@@ -154,17 +154,17 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           {/* Footer Flip Indicator */}
-          <div className="text-[9px] font-bold uppercase tracking-wider text-google-dark/70 dark:text-white/70 text-center flex items-center justify-center gap-1 relative z-10">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-google-dark/70 text-center flex items-center justify-center gap-1 relative z-10">
             <RefreshCw className="w-2.5 h-2.5" />
             <span>Flip</span>
           </div>
         </div>
 
         {/* ========================================================
-             BACK FACE
+             BACK FACE (Solid, steady, pure light theme)
              ======================================================== */}
         <div
-          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark dark:border-white/30 bg-white dark:bg-gray-800 p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
+          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
         >
           {/* Top row on Back */}
           <div className="flex items-center justify-between w-full">
@@ -181,17 +181,17 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                 e.stopPropagation();
                 onToggleFlip(index);
               }}
-              className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 border border-google-dark transition"
+              className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 border border-google-dark transition cursor-pointer"
               title="Flip Back"
               aria-label="Flip Back to Front"
             >
-              <Undo2 className="w-3.5 h-3.5 text-google-dark dark:text-white" />
+              <Undo2 className="w-3.5 h-3.5 text-google-dark" />
             </button>
           </div>
 
           {/* Description & Action Controls */}
           <div className="flex-1 flex flex-col justify-center items-center text-center my-1 overflow-hidden">
-            <p className="text-[10px] sm:text-[11px] font-semibold leading-tight text-google-dark dark:text-gray-200 mb-2 px-1 line-clamp-2">
+            <p className="text-[10px] sm:text-[11px] font-semibold leading-tight text-google-dark mb-2 px-1 line-clamp-2">
               {tile.description}
             </p>
 
@@ -206,7 +206,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     <button
                       type="button"
                       onClick={() => onAdjustPhoto(index)}
-                      className="flex-1 py-1 text-[10px] font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-amber-100 transition"
+                      className="flex-1 py-1 text-[10px] font-bold bg-amber-50 text-amber-700 border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-amber-100 transition cursor-pointer"
                       title="Adjust crop, rotation, or fit"
                     >
                       <Sliders className="w-2.5 h-2.5" />
@@ -216,7 +216,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 py-1 text-[10px] font-bold bg-blue-50 dark:bg-blue-900/30 text-google-blue border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-blue-100 transition"
+                      className="flex-1 py-1 text-[10px] font-bold bg-blue-50 text-google-blue border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-blue-100 transition cursor-pointer"
                       title="Replace photo"
                     >
                       <RefreshCw className="w-2.5 h-2.5" />
@@ -226,7 +226,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     <button
                       type="button"
                       onClick={() => onRemovePhoto(index)}
-                      className="flex-1 py-1 text-[10px] font-bold bg-red-50 dark:bg-red-900/30 text-google-red border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-red-100 transition"
+                      className="flex-1 py-1 text-[10px] font-bold bg-red-50 text-google-red border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-red-100 transition cursor-pointer"
                       title="Remove photo"
                     >
                       <Trash2 className="w-2.5 h-2.5" />
@@ -249,7 +249,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     type="button"
                     disabled={isLocked}
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-2 px-2 bg-google-blue text-white text-[11px] sm:text-xs font-bold border-2 border-google-dark rounded-xl flex items-center justify-center gap-1.5 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-50"
+                    className="w-full py-2 px-2 bg-google-blue text-white text-[11px] sm:text-xs font-bold border-2 border-google-dark rounded-xl flex items-center justify-center gap-1.5 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer"
                   >
                     <Camera className="w-3.5 h-3.5" />
                     <span>Upload Pic</span>
@@ -259,7 +259,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
             )}
           </div>
 
-          <div className="text-[9px] text-google-grey dark:text-gray-400 font-medium truncate">
+          <div className="text-[9px] text-google-grey font-medium truncate">
             {isDone ? 'Completed challenge' : 'Pending challenge'}
           </div>
         </div>

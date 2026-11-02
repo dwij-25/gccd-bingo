@@ -15,9 +15,9 @@ export function useBingoCard(initialCard: BingoCard | null) {
 
   const { showSuccess, showError } = useToast();
 
-  // Rehydrate card on mount / load
+  // Rehydrate card on mount / load (stabilized by ID to prevent cyclical re-renders)
   useEffect(() => {
-    if (initialCard) {
+    if (initialCard && (!card || card.id !== initialCard.id)) {
       // Rehydrate tile statuses: If tile has an image_url, status MUST be 'completed' and dot is GREEN
       const rehydratedTiles = initialCard.tiles.map(t => ({
         ...t,
@@ -36,8 +36,10 @@ export function useBingoCard(initialCard: BingoCard | null) {
         const d = new Date(initialCard.updated_at);
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       }
+    } else if (!initialCard) {
+      setCard(null);
     }
-  }, [initialCard]);
+  }, [initialCard?.id]);
 
   // Unsaved changes browser warning
   useEffect(() => {
