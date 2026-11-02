@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Download, Sparkles, CheckCircle2 } from 'lucide-react';
 import { BingoCard, Participant } from '../types/bingo.js';
 import { TEMPLATE_SLOTS, TEMPLATE_VIEWBOX } from '../lib/templateConfig.js';
 
@@ -74,7 +74,7 @@ export const PREDEFINED_CAPTIONS: CaptionOption[] = [
   },
   {
     id: 'none',
-    label: 'No Caption',
+    label: 'No Tagline',
     tagline: '',
     theme: 'none',
     bgColor: '#FFFFFF',
@@ -141,7 +141,6 @@ export const CardExporter: React.FC<CardExporterProps> = ({
   card
 }) => {
   const [isExporting, setIsExporting] = useState(false);
-  const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [isIosSafari, setIsIosSafari] = useState(false);
   const [selectedCaptionId, setSelectedCaptionId] = useState<string>('google-cloud');
 
@@ -156,9 +155,13 @@ export const CardExporter: React.FC<CardExporterProps> = ({
 
   if (!isOpen) return null;
 
+  const chosenCaption = PREDEFINED_CAPTIONS.find(c => c.id === selectedCaptionId) || PREDEFINED_CAPTIONS[0];
+
   const generateCardPng = async (): Promise<{ blob: Blob; dataUrl: string }> => {
-    // 1. Convert base template to data URI
+    // 1. Convert base template & orange brackets to data URIs
     const templateDataUri = await urlToDataUri('/assets/bingo_card_a4_template.png');
+    const leftBracketUri = await urlToDataUri('/assets/left_bracket.png');
+    const rightBracketUri = await urlToDataUri('/assets/right_bracket.png');
 
     // 2. Convert all tile images to data URIs
     const photoDataUris: Record<number, string | null> = {};
@@ -251,7 +254,6 @@ export const CardExporter: React.FC<CardExporterProps> = ({
     }).join('\n');
 
     // Selected Caption rendering in empty space below the grid (y=1636..1688)
-    const chosenCaption = PREDEFINED_CAPTIONS.find(c => c.id === selectedCaptionId) || PREDEFINED_CAPTIONS[0];
     const hasCaption = chosenCaption.theme !== 'none' && chosenCaption.tagline.trim().length > 0;
 
     const captionSvg = hasCaption ? `
@@ -271,18 +273,43 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           ${clipPathsSvg}
         </defs>
 
-        <!-- Layer 1: Background Template (Logo, Header, Structure) -->
+        <!-- Layer 1: Background Template Base -->
         <image href="${templateDataUri}" x="0" y="0" width="${width}" height="${height}" />
+
+        <!-- Layer 1.5: Google Developer Groups Cloud Ahmedabad BINGO Brand Header with Orange Containers -->
+        <g id="gdg-brand-header">
+          <!-- Patch to cover legacy text in header region -->
+          <rect x="220" y="140" width="800" height="390" fill="#F0F0F0" />
+
+          <!-- Left Orange Bracket Container { -->
+          <image href="${leftBracketUri}" x="75" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
+
+          <!-- Right Orange Bracket Container } -->
+          <image href="${rightBracketUri}" x="1046" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
+
+          <!-- Brand Title -->
+          <text x="620" y="248" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="44" text-anchor="middle">Google Developer Groups</text>
+          
+          <text x="620" y="332" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="64" text-anchor="middle">Cloud Ahmedabad</text>
+
+          <!-- BINGO Capsule Pill Outline -->
+          <rect x="400" y="380" width="440" height="106" rx="53" ry="53" fill="#FFFFFF" stroke="#202124" stroke-width="6" />
+          <text x="620" y="455" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="62" text-anchor="middle" letter-spacing="6">BINGO</text>
+        </g>
 
         <!-- Layer 2 & 3: 9 Slots (Strictly bounded and clipped) -->
         ${slotsSvg}
 
-        <!-- Layer 4: Top Header Ribbon: Participant Name highlighted in 4 Google colors (No Email, No ID) -->
-        <g>
+        <!-- Layer 4: Top Header Ribbon: Participant Name Tagline in 4 Google colors (No Email, No ID) -->
+        <g id="participant-ribbon">
           <rect x="64" y="28" width="1121" height="74" rx="18" ry="18" fill="#202124" />
           <rect x="60" y="24" width="1121" height="74" rx="18" ry="18" fill="#FFFFFF" stroke="#202124" stroke-width="4.5" />
-          <text x="620" y="73" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="38" letter-spacing="1">
-            ${renderGoogleColoredText(participant.name)}
+          
+          <text x="620" y="73" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="34" letter-spacing="1">
+            <tspan fill="#FBBC04">★  </tspan>
+            ${renderGoogleColoredText(participant.name)}'s
+            <tspan fill="#202124"> OFFICIAL BINGO CARD  </tspan>
+            <tspan fill="#FBBC04">★</tspan>
           </text>
         </g>
 
@@ -331,7 +358,6 @@ export const CardExporter: React.FC<CardExporterProps> = ({
     setIsExporting(true);
     try {
       const { blob, dataUrl } = await generateCardPng();
-      setPreviewUri(dataUrl);
 
       const fileName = `GCCD_Bingo_${participant.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
@@ -346,7 +372,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           });
           return;
         } catch (shareErr) {
-          // User canceled or fallback to download
+          // Fallback to direct download anchor
         }
       }
 
@@ -394,50 +420,92 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           <X className="w-5 h-5 text-google-dark" />
         </button>
 
-        <div className="text-center mb-5">
-          <div className="w-16 h-16 rounded-2xl bg-google-blue/10 border-2 border-google-blue mx-auto mb-3 flex items-center justify-center text-google-blue shadow-sm">
-            <Download className="w-8 h-8" />
+        <div className="text-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-google-blue/10 border-2 border-google-blue mx-auto mb-2 flex items-center justify-center text-google-blue shadow-sm">
+            <Download className="w-7 h-7" />
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-google-dark">
             Download Official A4 Card
           </h3>
-          <p className="text-xs text-google-grey mt-1">
-            Exports a high-resolution 300 DPI A4 image (2482 × 3508 px) with your photos and custom Google tagline.
-          </p>
         </div>
 
-        {/* Participant Name Preview in 4 Google Colors */}
-        <div className="bg-white border-2 border-google-dark rounded-2xl p-3.5 mb-5 shadow-xs text-center">
-          <span className="text-[11px] font-bold text-google-grey uppercase tracking-wider block mb-1">
-            Participant Spotlight
-          </span>
-          <div className="text-2xl sm:text-3xl font-black tracking-wide flex justify-center flex-wrap gap-x-1">
-            {participant.name.split(' ').map((word, wIdx) => (
-              <span key={wIdx} className="inline-flex">
-                {word.split('').map((char, cIdx) => {
-                  const colors = ['text-[#4285F4]', 'text-[#EA4335]', 'text-[#FBBC04]', 'text-[#34A853]'];
-                  const colorClass = colors[(wIdx * 5 + cIdx) % colors.length];
-                  return (
-                    <span key={cIdx} className={colorClass}>
-                      {char}
-                    </span>
-                  );
-                })}
-              </span>
-            ))}
+        {/* Live Card Placement Preview (Shows exactly how the tagline sits on the card) */}
+        <div className="mb-5 bg-[#F0F0F0] border-2 border-google-dark rounded-2xl p-3.5 shadow-brutal transition-all">
+          <div className="text-[10px] font-black uppercase tracking-wider text-google-grey mb-2 flex items-center justify-between">
+            <span>Live Card Preview</span>
+            <span className="text-google-blue font-bold">Updates in Real-Time</span>
           </div>
-          <p className="text-[10px] text-google-grey mt-1">
-            (Email address and Bingo ID are kept private and omitted from the saved image)
-          </p>
+
+          {/* Top Ribbon Preview */}
+          <div className="bg-white border-2 border-google-dark rounded-lg py-1.5 px-2 text-center shadow-xs mb-3">
+            <span className="text-xs sm:text-sm font-black tracking-wide">
+              <span className="text-[#FBBC04]">★ </span>
+              {participant.name.split(' ').map((word, wIdx) => (
+                <span key={wIdx} className="inline-flex">
+                  {word.split('').map((char, cIdx) => {
+                    const colors = ['text-[#4285F4]', 'text-[#EA4335]', 'text-[#FBBC04]', 'text-[#34A853]'];
+                    return (
+                      <span key={cIdx} className={colors[(wIdx * 5 + cIdx) % colors.length]}>
+                        {char}
+                      </span>
+                    );
+                  })}
+                  &nbsp;
+                </span>
+              ))}
+              's OFFICIAL BINGO CARD
+              <span className="text-[#FBBC04]"> ★</span>
+            </span>
+          </div>
+
+          {/* Mini 3-box Grid Preview representing bottom row of slots */}
+          <div className="grid grid-cols-3 gap-1.5 mb-2.5 opacity-75">
+            <div className="aspect-[324/290] bg-[#E6F4EA] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
+              Photo Booth
+            </div>
+            <div className="aspect-[324/290] bg-[#FFE7A5] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
+              Sponsor Booth
+            </div>
+            <div className="aspect-[324/290] bg-[#FCE8E6] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
+              Your Badge
+            </div>
+          </div>
+
+          {/* Tagline Badge Live Position Preview */}
+          <div className="min-h-[38px] flex items-center justify-center">
+            {chosenCaption.theme !== 'none' && chosenCaption.tagline ? (
+              <div
+                className="py-1 px-4 rounded-full border-2 border-google-dark shadow-xs flex items-center gap-1.5 animate-fadeIn"
+                style={{
+                  backgroundColor: chosenCaption.bgColor,
+                  color: chosenCaption.textColor
+                }}
+              >
+                <span className="text-xs">{chosenCaption.emoji}</span>
+                <span className="text-[11px] sm:text-xs font-black tracking-tight">
+                  {chosenCaption.tagline}
+                </span>
+              </div>
+            ) : (
+              <div className="text-[10px] text-gray-400 font-semibold italic">
+                (No tagline badge displayed here)
+              </div>
+            )}
+          </div>
+
+          {/* Footer Preview */}
+          <div className="text-center text-[9px] font-bold text-[#5F6368] mt-2">
+            Google Cloud Community Day 2026
+          </div>
         </div>
 
         {/* Caption / Tagline Selector */}
         <div className="mb-5">
           <label className="block text-xs font-black text-google-dark mb-2 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-google-yellow fill-google-yellow" />
-            <span>Select a Tagline for the Card:</span>
+            <span>Select a Tagline to Display Below the Grid:</span>
           </label>
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
             {PREDEFINED_CAPTIONS.map((cap) => {
               const isSelected = selectedCaptionId === cap.id;
               return (
@@ -445,9 +513,9 @@ export const CardExporter: React.FC<CardExporterProps> = ({
                   key={cap.id}
                   type="button"
                   onClick={() => setSelectedCaptionId(cap.id)}
-                  className={`w-full text-left p-2.5 rounded-xl border-2 transition flex items-center justify-between gap-2 cursor-pointer ${
+                  className={`w-full text-left p-2 rounded-xl border-2 transition flex items-center justify-between gap-2 cursor-pointer ${
                     isSelected
-                      ? 'border-google-dark bg-blue-50 shadow-xs'
+                      ? 'border-google-dark bg-blue-50 shadow-xs ring-1 ring-google-dark'
                       : 'border-gray-200 hover:border-gray-300 bg-white'
                   }`}
                 >

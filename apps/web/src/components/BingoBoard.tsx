@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Lock, CheckCircle2, Download, Trophy, LogOut, Clock, Copy, CheckCheck, AlertCircle, RefreshCw, RotateCcw } from 'lucide-react';
+import { Save, Lock, Download, Trophy, LogOut, Clock, Copy, CheckCheck, RefreshCw } from 'lucide-react';
 import { Participant, BingoCard } from '../types/bingo.js';
 import { BingoTile } from './BingoTile.js';
 
@@ -11,7 +11,6 @@ interface BingoBoardProps {
   onInitiateCamera: (index: number, tileTitle: string) => void;
   onAdjustPhoto: (index: number) => void;
   onRemovePhoto: (index: number) => Promise<void>;
-  onResetProgress: () => Promise<void>;
   onSaveDraft: () => Promise<any>;
   onOpenSubmitModal: () => void;
   onOpenCheckModal: () => void;
@@ -31,19 +30,16 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   onInitiateCamera,
   onAdjustPhoto,
   onRemovePhoto,
-  onResetProgress,
   onSaveDraft,
   onOpenSubmitModal,
   onOpenCheckModal,
   onOpenExportModal,
   onLogout,
   isSaving,
-  saveError,
   lastSavedTime,
   uploadProgress
 }) => {
   const [copiedId, setCopiedId] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
 
   // 8 Challenges (Tile index 4 is the static GDG Cloud Ahmedabad center emblem)
   const challengeTiles = card.tiles.filter(t => t.tile_index !== 4 && !t.isCenter);
@@ -61,27 +57,13 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
     }
   };
 
-  const handleResetClick = async () => {
-    const confirmReset = window.confirm(
-      'Are you sure you want to reset all challenge progress? This will clear all uploaded pictures so you can start fresh.'
-    );
-    if (!confirmReset) return;
-
-    setIsResetting(true);
-    try {
-      await onResetProgress();
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
   return (
     <div className="w-full max-w-2xl mx-auto bg-white border-3 border-google-dark rounded-3xl p-4 sm:p-7 shadow-brutal-lg transition-all animate-fadeIn">
 
       {/* ========================================================
-           MINIMAL PARTICIPANT BAR (Minimal, no avatar circle, no draft status)
+           MINIMAL PARTICIPANT BAR (With Synced Time beside ID)
            ======================================================== */}
-      <div className="bg-gray-50 border-2 border-google-dark rounded-2xl px-3.5 py-2 mb-4 shadow-xs flex items-center justify-between gap-2.5">
+      <div className="bg-gray-50 border-2 border-google-dark rounded-2xl px-3.5 py-2.5 mb-5 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
           <span className="font-extrabold text-google-dark">
             {participant.name} <span className="font-normal text-google-grey text-xs">({participant.email})</span>
@@ -107,6 +89,14 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
               )}
             </button>
           </div>
+
+          {/* Last synced time placed directly within this box beside the ID */}
+          {lastSavedTime && (
+            <div className="flex items-center gap-1 text-[11px] font-bold text-google-grey bg-white px-2 py-0.5 rounded-md border border-gray-200 shadow-2xs">
+              <Clock className="w-3 h-3 text-google-blue flex-shrink-0" />
+              <span>Synced {lastSavedTime}</span>
+            </div>
+          )}
         </div>
 
         {/* Logout Button */}
@@ -121,50 +111,33 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
         </button>
       </div>
 
-      {/* Submission Timeline Banner (shown after submitting) */}
-      {card.submitted_at && (
-        <div className="mb-4 px-3.5 py-2 bg-emerald-50 border-2 border-emerald-500 rounded-xl flex items-center justify-between gap-2 text-xs text-emerald-900 font-bold animate-fadeIn">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>
-              Submitted at {new Date(card.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • You can edit & resubmit anytime
-            </span>
+      {/* ========================================================
+           GOOGLE DEVELOPER GROUPS CLOUD AHMEDABAD BINGO
+           VISUAL BRAND HEADER WITH ORANGE CONTAINERS { }
+           ======================================================== */}
+      <div className="w-full flex items-center justify-center gap-3 sm:gap-6 my-4 select-none">
+        <img
+          src="/assets/left_bracket.png"
+          alt="{"
+          className="w-10 sm:w-14 h-auto select-none"
+        />
+
+        <div className="flex flex-col items-center text-center">
+          <span className="text-sm sm:text-base md:text-lg font-bold text-google-dark tracking-tight">
+            Google Developer Groups
+          </span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-google-dark tracking-tight leading-none my-1">
+            Cloud Ahmedabad
+          </h1>
+          <div className="mt-1 px-8 sm:px-10 py-1 sm:py-1.5 bg-white border-3 border-google-dark rounded-full text-lg sm:text-2xl font-black tracking-widest shadow-brutal text-google-dark">
+            BINGO
           </div>
         </div>
-      )}
 
-      {/* Save Draft Feedback Banner */}
-      <div className="flex items-center justify-between text-xs font-bold mb-4 px-1 min-h-[20px]">
-        {saveError ? (
-          <div className="flex items-center gap-1.5 text-google-red animate-shake">
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>{saveError}</span>
-            <button
-              onClick={onSaveDraft}
-              className="ml-2 underline text-google-blue cursor-pointer hover:opacity-80"
-            >
-              Retry
-            </button>
-          </div>
-        ) : lastSavedTime ? (
-          <div className="flex items-center gap-1.5 text-google-grey">
-            <Clock className="w-3.5 h-3.5 text-google-blue flex-shrink-0" />
-            <span>Last synced: {lastSavedTime}</span>
-          </div>
-        ) : (
-          <span className="text-gray-400">Ready to play</span>
-        )}
-      </div>
-
-      {/* DevFest BINGO Official Visual Header */}
-      <div className="w-full flex justify-center mb-6">
         <img
-          src="/assets/bingo_header.png"
-          alt="DevFest Google Developer Groups Cloud Ahmedabad BINGO"
-          className="w-full max-w-[420px] h-auto object-contain select-none"
-          onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
-          }}
+          src="/assets/right_bracket.png"
+          alt="}"
+          className="w-10 sm:w-14 h-auto select-none"
         />
       </div>
 
@@ -268,19 +241,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
            SECONDARY ACTION CONTROLS
            ======================================================== */}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-gray-200">
-        {/* Reset Progress Button */}
-        <button
-          type="button"
-          onClick={handleResetClick}
-          disabled={isResetting || completedCount === 0}
-          className="px-4 py-2.5 text-xs font-bold border-2 border-google-dark bg-white text-google-dark rounded-full flex items-center gap-1.5 shadow-brutal hover:bg-red-50 hover:text-google-red transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          title="Reset and clear all uploaded photos"
-        >
-          <RotateCcw className={`w-3.5 h-3.5 text-google-red ${isResetting ? 'animate-spin' : ''}`} />
-          <span>Reset Progress</span>
-        </button>
-
-        {/* View Submission and Win Status: active when 8 challenges are green or submitted */}
+        {/* View Submission and Win Status */}
         <button
           type="button"
           disabled={!allGreen && !isSubmitted}
