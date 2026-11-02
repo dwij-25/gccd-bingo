@@ -167,10 +167,10 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black sm:bg-black/80 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full h-full sm:h-auto sm:max-w-lg bg-white sm:border-3 sm:border-google-dark sm:rounded-3xl p-3.5 sm:p-6 shadow-brutal-lg flex flex-col justify-between max-h-full sm:max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full h-full sm:h-auto sm:max-w-lg bg-white border-0 sm:border-3 sm:border-google-dark rounded-none sm:rounded-3xl p-4 sm:p-6 shadow-brutal-lg flex flex-col justify-between overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-2.5 sm:pb-3 mb-1 flex-shrink-0">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-2.5 sm:pb-3 mb-2 flex-shrink-0">
           <div>
             <h3 className="font-extrabold text-sm sm:text-base text-google-dark">
               Crop & Position Photo
@@ -188,8 +188,11 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
           </button>
         </div>
 
-        {/* Cropper Frame with Rounded Mask Preview */}
-        <div className="relative flex-1 w-full min-h-[280px] sm:min-h-0 sm:h-80 bg-gray-900 rounded-2xl overflow-hidden border-2 border-google-dark shadow-inner my-2">
+        {/* Cropper Frame with Rounded Mask Preview - Guaranteed Fixed Height */}
+        <div
+          style={{ height: '360px', minHeight: '300px', width: '100%', position: 'relative' }}
+          className="w-full bg-gray-900 rounded-2xl overflow-hidden border-2 border-google-dark shadow-inner my-2 flex-shrink-0"
+        >
           <Cropper
             image={imageSrc}
             crop={crop}

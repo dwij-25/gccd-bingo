@@ -171,9 +171,9 @@ function BingoApp() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden bg-[#F8F9FA] text-[#202124]">
+    <div className="relative min-h-[100dvh] flex flex-col justify-between overflow-x-hidden bg-white sm:bg-[#F8F9FA] text-[#202124]">
       {/* Background Dots */}
-      <div className="fixed inset-0 pointer-events-none ambient-dots-bg opacity-15 z-0" />
+      <div className="fixed inset-0 pointer-events-none ambient-dots-bg opacity-15 z-0 hidden sm:block" />
 
       {/* Confetti Celebration */}
       <ConfettiCanvas active={showConfetti} />
@@ -186,7 +186,7 @@ function BingoApp() {
       )}
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-start sm:justify-center px-2 py-2 sm:p-6 w-full max-w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start sm:justify-center p-0 sm:p-6 w-full max-w-full">
         {isLoading ? (
           <div className="flex flex-col items-center gap-3 py-16 animate-pulse">
             <div className="w-12 h-12 border-4 border-google-blue border-t-transparent rounded-full animate-spin" />
@@ -272,7 +272,7 @@ function BingoApp() {
       />
 
       {/* Footer (Clean, no organizer portal link on main page) */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey font-medium border-t border-gray-200 flex items-center justify-center">
+      <footer className="hidden sm:flex relative z-10 w-full py-4 text-center text-xs text-google-grey font-medium border-t border-gray-200 items-center justify-center">
         <span>Google Developer Groups Cloud Ahmedabad • 2026</span>
       </footer>
     </div>

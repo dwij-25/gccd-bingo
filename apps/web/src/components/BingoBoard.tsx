@@ -58,7 +58,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white border-2 sm:border-3 border-google-dark rounded-2xl sm:rounded-3xl p-3 sm:p-7 shadow-brutal sm:shadow-brutal-lg transition-all animate-fadeIn flex flex-col justify-between min-h-[calc(100dvh-5.5rem)] sm:min-h-0">
+    <div className="w-full sm:max-w-2xl mx-auto bg-white border-0 sm:border-3 border-google-dark rounded-none sm:rounded-3xl p-3 sm:p-7 shadow-none sm:shadow-brutal-lg transition-all animate-fadeIn flex flex-col justify-between min-h-[calc(100dvh-3.5rem)] sm:min-h-0">
 
       {/* ========================================================
            MINIMAL PARTICIPANT BAR (With Synced Time beside ID)
