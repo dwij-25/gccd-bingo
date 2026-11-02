@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { User, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Mail, ArrowRight, AlertCircle, BookOpen } from 'lucide-react';
 
 interface LoginGateProps {
   onLogin: (name: string, email: string) => Promise<any>;
   isLoading: boolean;
   error: string | null;
+  onOpenRulesModal?: () => void;
 }
 
-export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error }) => {
+export const LoginGate: React.FC<LoginGateProps> = ({
+  onLogin,
+  isLoading,
+  error,
+  onOpenRulesModal
+}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
@@ -110,9 +116,18 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
         </form>
       </div>
 
-      <div className="pt-4 pb-2 sm:pb-0 border-t border-gray-100 text-center text-xs text-google-grey font-semibold flex-shrink-0">
-        Google Cloud Community Day 2026 • Official Attendee Bingo
-      </div>
+      {onOpenRulesModal && (
+        <div className="pt-4 pb-2 sm:pb-0 border-t border-gray-100 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onOpenRulesModal}
+            className="w-full py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-google-dark border-2 border-google-dark rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 shadow-xs active:shadow-none transition cursor-pointer"
+          >
+            <BookOpen className="w-4 h-4 text-google-blue flex-shrink-0" />
+            <span>How to Play &amp; Rules</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

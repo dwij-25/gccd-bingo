@@ -193,7 +193,12 @@ function BingoApp() {
             <span className="text-sm font-bold text-google-grey">Loading GCCD Bingo...</span>
           </div>
         ) : !isAuthenticated || !activeCard ? (
-          <LoginGate onLogin={login} isLoading={isLoading} error={error} />
+          <LoginGate
+            onLogin={login}
+            isLoading={isLoading}
+            error={error}
+            onOpenRulesModal={() => setIsRulesModalOpen(true)}
+          />
         ) : (
           <BingoBoard
             participant={participant!}
