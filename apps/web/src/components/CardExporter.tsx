@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Download, Sparkles, CheckCircle2 } from 'lucide-react';
 import { BingoCard, Participant } from '../types/bingo.js';
 import { TEMPLATE_SLOTS, TEMPLATE_VIEWBOX } from '../lib/templateConfig.js';
@@ -111,7 +111,7 @@ function renderGoogleColoredText(text: string): string {
   }).join('');
 }
 
-// Convert any image URL (local asset, relative path, or external) to a Data URI
+// Convert any image URL to a Data URI
 async function urlToDataUri(url: string): Promise<string> {
   if (url.startsWith('data:')) return url;
   return new Promise((resolve, reject) => {
@@ -127,7 +127,6 @@ async function urlToDataUri(url: string): Promise<string> {
       resolve(canvas.toDataURL('image/png'));
     };
     img.onerror = () => {
-      // Return 1x1 transparent if fails
       resolve('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
     };
     img.src = url;
@@ -143,8 +142,18 @@ export const CardExporter: React.FC<CardExporterProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [isIosSafari, setIsIosSafari] = useState(false);
   const [selectedCaptionId, setSelectedCaptionId] = useState<string>('google-cloud');
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(true);
 
-  React.useEffect(() => {
+  // Cached data URIs for instant preview regeneration
+  const cachedAssetsRef = useRef<{
+    template: string;
+    leftBracket: string;
+    rightBracket: string;
+    photos: Record<number, string | null>;
+  } | null>(null);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = window.navigator.userAgent;
       const isIos = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
@@ -153,41 +162,23 @@ export const CardExporter: React.FC<CardExporterProps> = ({
     }
   }, []);
 
-  if (!isOpen) return null;
-
-  const chosenCaption = PREDEFINED_CAPTIONS.find(c => c.id === selectedCaptionId) || PREDEFINED_CAPTIONS[0];
-
-  const generateCardPng = async (): Promise<{ blob: Blob; dataUrl: string }> => {
-    // 1. Convert base template & orange brackets to data URIs
-    const templateDataUri = await urlToDataUri('/assets/bingo_card_a4_template.png');
-    const leftBracketUri = await urlToDataUri('/assets/left_bracket.png');
-    const rightBracketUri = await urlToDataUri('/assets/right_bracket.png');
-
-    // 2. Convert all tile images to data URIs
-    const photoDataUris: Record<number, string | null> = {};
-    for (let i = 0; i < 9; i++) {
-      const tile = card.tiles.find(t => t.tile_index === i);
-      if (tile && tile.image_url) {
-        photoDataUris[i] = await urlToDataUri(tile.image_url);
-      } else {
-        photoDataUris[i] = null;
-      }
-    }
-
-    // 3. Build SVG Document
+  // Build the complete SVG Document string
+  const buildSvgString = (
+    captionId: string,
+    assets: { template: string; leftBracket: string; rightBracket: string; photos: Record<number, string | null> }
+  ): string => {
     const { width, height } = TEMPLATE_VIEWBOX;
+    const chosenCaption = PREDEFINED_CAPTIONS.find(c => c.id === captionId) || PREDEFINED_CAPTIONS[0];
 
-    // Define clip paths for each slot
     const clipPathsSvg = TEMPLATE_SLOTS.map(s => `
       <clipPath id="slot-clip-${s.index}">
         <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" />
       </clipPath>
     `).join('\n');
 
-    // Render layers for each slot
     const slotsSvg = TEMPLATE_SLOTS.map(s => {
       const tile = card.tiles.find(t => t.tile_index === s.index);
-      const photoUri = photoDataUris[s.index];
+      const photoUri = assets.photos[s.index];
       const hasPhoto = Boolean(photoUri);
       const activityTitle = tile?.title || s.title || s.label;
       const displayTitle = activityTitle.length > 27 ? activityTitle.slice(0, 25) + '…' : activityTitle;
@@ -204,7 +195,6 @@ export const CardExporter: React.FC<CardExporterProps> = ({
             <text x="${s.x + 14}" y="${s.y + 28}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="15">${escapeXml(displayTitle)}</text>
             <circle cx="${s.x + s.width - 22}" cy="${s.y + 22}" r="9" fill="#34A853" stroke="#202124" stroke-width="2.5" />
           </g>
-          <!-- Border around slot -->
           <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
         `;
       } else if (s.index === 4) {
@@ -267,32 +257,31 @@ export const CardExporter: React.FC<CardExporterProps> = ({
       </g>
     ` : '';
 
-    const svgString = `
+    // Pixelated Name font sizing
+    const rawUpperName = participant.name.trim().toUpperCase();
+    const pixelFontSize = Math.min(28, Math.max(16, Math.floor(820 / (rawUpperName.length + 14))));
+
+    return `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
         <defs>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&amp;family=Press+Start+2P&amp;family=Silkscreen:wght@700&amp;display=swap');
+          </style>
           ${clipPathsSvg}
         </defs>
 
         <!-- Layer 1: Background Template Base -->
-        <image href="${templateDataUri}" x="0" y="0" width="${width}" height="${height}" />
+        <image href="${assets.template}" x="0" y="0" width="${width}" height="${height}" />
 
         <!-- Layer 1.5: Google Developer Groups Cloud Ahmedabad BINGO Brand Header with Orange Containers -->
         <g id="gdg-brand-header">
-          <!-- Patch to cover legacy text in header region -->
           <rect x="220" y="140" width="800" height="390" fill="#F0F0F0" />
+          <image href="${assets.leftBracket}" x="75" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
+          <image href="${assets.rightBracket}" x="1046" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
 
-          <!-- Left Orange Bracket Container { -->
-          <image href="${leftBracketUri}" x="75" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
-
-          <!-- Right Orange Bracket Container } -->
-          <image href="${rightBracketUri}" x="1046" y="145" width="120" height="390" preserveAspectRatio="xMidYMid meet" />
-
-          <!-- Brand Title -->
           <text x="620" y="248" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="44" text-anchor="middle">Google Developer Groups</text>
-          
           <text x="620" y="332" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="64" text-anchor="middle">Cloud Ahmedabad</text>
 
-          <!-- BINGO Capsule Pill Outline -->
           <rect x="400" y="380" width="440" height="106" rx="53" ry="53" fill="#FFFFFF" stroke="#202124" stroke-width="6" />
           <text x="620" y="455" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="62" text-anchor="middle" letter-spacing="6">BINGO</text>
         </g>
@@ -300,16 +289,14 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         <!-- Layer 2 & 3: 9 Slots (Strictly bounded and clipped) -->
         ${slotsSvg}
 
-        <!-- Layer 4: Top Header Ribbon: Participant Name Tagline in 4 Google colors (No Email, No ID) -->
+        <!-- Layer 4: Top Header Ribbon: Participant Name in Pixelated Font & Google Colors -->
         <g id="participant-ribbon">
           <rect x="64" y="28" width="1121" height="74" rx="18" ry="18" fill="#202124" />
           <rect x="60" y="24" width="1121" height="74" rx="18" ry="18" fill="#FFFFFF" stroke="#202124" stroke-width="4.5" />
           
-          <text x="620" y="73" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="34" letter-spacing="1">
-            <tspan fill="#FBBC04">★  </tspan>
-            ${renderGoogleColoredText(participant.name)}'s
-            <tspan fill="#202124"> OFFICIAL BINGO CARD  </tspan>
-            <tspan fill="#FBBC04">★</tspan>
+          <text x="620" y="70" text-anchor="middle" font-family="'Silkscreen', 'Press Start 2P', monospace" font-weight="700" font-size="${pixelFontSize}" letter-spacing="1.5">
+            ${renderGoogleColoredText(rawUpperName)}'S
+            <tspan fill="#202124"> BINGO CARD</tspan>
           </text>
         </g>
 
@@ -320,9 +307,11 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         <text x="620" y="1714" fill="#5F6368" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="600" font-size="16" text-anchor="middle">Google Cloud Community Day 2026</text>
       </svg>
     `;
+  };
 
-    // 4. Rasterize SVG to Canvas at 2x Scale (2482 x 3508)
-    const scale = 2;
+  // Rasterize SVG string to Canvas and return PNG Data URL
+  const rasterizeSvgToDataUrl = async (svgString: string, scale = 1): Promise<string> => {
+    const { width, height } = TEMPLATE_VIEWBOX;
     const canvas = document.createElement('canvas');
     canvas.width = width * scale;
     canvas.height = height * scale;
@@ -345,21 +334,76 @@ export const CardExporter: React.FC<CardExporterProps> = ({
     ctx.drawImage(svgImg, 0, 0, canvas.width, canvas.height);
     URL.revokeObjectURL(svgUrl);
 
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Failed to generate PNG blob'));
-        const dataUrl = canvas.toDataURL('image/png');
-        resolve({ blob, dataUrl });
-      }, 'image/png');
-    });
+    return canvas.toDataURL('image/png');
   };
 
+  // Pre-load all assets and generate the actual card preview
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadAndRenderPreview = async () => {
+      try {
+        if (!cachedAssetsRef.current) {
+          setIsLoadingPreview(true);
+          const [template, leftBracket, rightBracket] = await Promise.all([
+            urlToDataUri('/assets/bingo_card_a4_template.png'),
+            urlToDataUri('/assets/left_bracket.png'),
+            urlToDataUri('/assets/right_bracket.png')
+          ]);
+
+          const photos: Record<number, string | null> = {};
+          for (let i = 0; i < 9; i++) {
+            const tile = card.tiles.find(t => t.tile_index === i);
+            if (tile && tile.image_url) {
+              photos[i] = await urlToDataUri(tile.image_url);
+            } else {
+              photos[i] = null;
+            }
+          }
+
+          cachedAssetsRef.current = { template, leftBracket, rightBracket, photos };
+        }
+
+        if (isCancelled) return;
+
+        const svgString = buildSvgString(selectedCaptionId, cachedAssetsRef.current);
+        const dataUrl = await rasterizeSvgToDataUrl(svgString, 1);
+
+        if (!isCancelled) {
+          setPreviewDataUrl(dataUrl);
+          setIsLoadingPreview(false);
+        }
+      } catch (err) {
+        console.error('Failed to generate preview card image:', err);
+        if (!isCancelled) setIsLoadingPreview(false);
+      }
+    };
+
+    if (isOpen) {
+      loadAndRenderPreview();
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, selectedCaptionId, card, participant]);
+
+  if (!isOpen) return null;
+
+  // Generate high-resolution 2x (300 DPI equivalent) PNG for download
   const handleDownload = async () => {
+    if (!cachedAssetsRef.current) return;
     setIsExporting(true);
+
     try {
-      const { blob, dataUrl } = await generateCardPng();
+      const svgString = buildSvgString(selectedCaptionId, cachedAssetsRef.current);
+      const highResDataUrl = await rasterizeSvgToDataUrl(svgString, 2);
 
       const fileName = `GCCD_Bingo_${participant.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+
+      // Convert data URL to Blob for sharing/downloading
+      const res = await fetch(highResDataUrl);
+      const blob = await res.blob();
       const file = new File([blob], fileName, { type: 'image/png' });
 
       // 1. Mobile Web Share API
@@ -371,8 +415,8 @@ export const CardExporter: React.FC<CardExporterProps> = ({
             text: `Here is my completed Google Cloud Community Day Bingo Card!`
           });
           return;
-        } catch (shareErr) {
-          // Fallback to direct download anchor
+        } catch {
+          // Fallback to direct anchor download
         }
       }
 
@@ -387,7 +431,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
                 <p style="padding:12px; background:#4285F4; border-radius:12px; font-weight:bold; font-size:14px; margin:16px;">
                   👉 Long-press the image below and select <strong>"Save to Photos"</strong>.
                 </p>
-                <img src="${dataUrl}" style="max-width:95vw; height:auto; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);" />
+                <img src="${highResDataUrl}" style="max-width:95vw; height:auto; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);" />
               </body>
             </html>
           `);
@@ -397,7 +441,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
 
       // 3. Desktop / Standard Download Anchor
       const a = document.createElement('a');
-      a.href = dataUrl;
+      a.href = highResDataUrl;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
@@ -410,8 +454,8 @@ export const CardExporter: React.FC<CardExporterProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full max-w-lg bg-white border-3 border-google-dark rounded-3xl p-6 sm:p-7 shadow-brutal-lg relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-lg bg-white border-3 border-google-dark rounded-3xl p-5 sm:p-6 shadow-brutal-lg relative max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
@@ -420,92 +464,35 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           <X className="w-5 h-5 text-google-dark" />
         </button>
 
-        <div className="text-center mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-google-blue/10 border-2 border-google-blue mx-auto mb-2 flex items-center justify-center text-google-blue shadow-sm">
-            <Download className="w-7 h-7" />
-          </div>
+        <div className="text-center mb-3">
           <h3 className="text-xl sm:text-2xl font-black text-google-dark">
             Download Official A4 Card
           </h3>
         </div>
 
-        {/* Live Card Placement Preview (Shows exactly how the tagline sits on the card) */}
-        <div className="mb-5 bg-[#F0F0F0] border-2 border-google-dark rounded-2xl p-3.5 shadow-brutal transition-all">
-          <div className="text-[10px] font-black uppercase tracking-wider text-google-grey mb-2 flex items-center justify-between">
-            <span>Live Card Preview</span>
-            <span className="text-google-blue font-bold">Updates in Real-Time</span>
-          </div>
-
-          {/* Top Ribbon Preview */}
-          <div className="bg-white border-2 border-google-dark rounded-lg py-1.5 px-2 text-center shadow-xs mb-3">
-            <span className="text-xs sm:text-sm font-black tracking-wide">
-              <span className="text-[#FBBC04]">★ </span>
-              {participant.name.split(' ').map((word, wIdx) => (
-                <span key={wIdx} className="inline-flex">
-                  {word.split('').map((char, cIdx) => {
-                    const colors = ['text-[#4285F4]', 'text-[#EA4335]', 'text-[#FBBC04]', 'text-[#34A853]'];
-                    return (
-                      <span key={cIdx} className={colors[(wIdx * 5 + cIdx) % colors.length]}>
-                        {char}
-                      </span>
-                    );
-                  })}
-                  &nbsp;
-                </span>
-              ))}
-              's OFFICIAL BINGO CARD
-              <span className="text-[#FBBC04]"> ★</span>
-            </span>
-          </div>
-
-          {/* Mini 3-box Grid Preview representing bottom row of slots */}
-          <div className="grid grid-cols-3 gap-1.5 mb-2.5 opacity-75">
-            <div className="aspect-[324/290] bg-[#E6F4EA] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
-              Photo Booth
+        {/* The Exact Card Image that will be downloaded */}
+        <div className="w-full flex items-center justify-center mb-4">
+          {isLoadingPreview || !previewDataUrl ? (
+            <div className="w-full h-72 sm:h-80 bg-gray-50 border-3 border-google-dark rounded-2xl flex flex-col items-center justify-center gap-2.5 shadow-brutal">
+              <div className="w-8 h-8 border-3 border-google-blue border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-bold text-google-grey">Rendering Card...</span>
             </div>
-            <div className="aspect-[324/290] bg-[#FFE7A5] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
-              Sponsor Booth
-            </div>
-            <div className="aspect-[324/290] bg-[#FCE8E6] rounded-md border border-google-dark flex items-center justify-center text-[9px] font-bold text-google-dark">
-              Your Badge
-            </div>
-          </div>
-
-          {/* Tagline Badge Live Position Preview */}
-          <div className="min-h-[38px] flex items-center justify-center">
-            {chosenCaption.theme !== 'none' && chosenCaption.tagline ? (
-              <div
-                className="py-1 px-4 rounded-full border-2 border-google-dark shadow-xs flex items-center gap-1.5 animate-fadeIn"
-                style={{
-                  backgroundColor: chosenCaption.bgColor,
-                  color: chosenCaption.textColor
-                }}
-              >
-                <span className="text-xs">{chosenCaption.emoji}</span>
-                <span className="text-[11px] sm:text-xs font-black tracking-tight">
-                  {chosenCaption.tagline}
-                </span>
-              </div>
-            ) : (
-              <div className="text-[10px] text-gray-400 font-semibold italic">
-                (No tagline badge displayed here)
-              </div>
-            )}
-          </div>
-
-          {/* Footer Preview */}
-          <div className="text-center text-[9px] font-bold text-[#5F6368] mt-2">
-            Google Cloud Community Day 2026
-          </div>
+          ) : (
+            <img
+              src={previewDataUrl}
+              alt="Bingo Card Preview"
+              className="w-auto max-h-[380px] sm:max-h-[420px] object-contain rounded-2xl border-3 border-google-dark shadow-brutal select-none"
+            />
+          )}
         </div>
 
-        {/* Caption / Tagline Selector */}
-        <div className="mb-5">
+        {/* Tagline Selector */}
+        <div className="mb-4">
           <label className="block text-xs font-black text-google-dark mb-2 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-google-yellow fill-google-yellow" />
-            <span>Select a Tagline to Display Below the Grid:</span>
+            <span>Select Tagline:</span>
           </label>
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
             {PREDEFINED_CAPTIONS.map((cap) => {
               const isSelected = selectedCaptionId === cap.id;
               return (
@@ -543,7 +530,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         <button
           type="button"
           onClick={handleDownload}
-          disabled={isExporting}
+          disabled={isExporting || isLoadingPreview}
           className="w-full py-3.5 bg-google-blue text-white font-extrabold text-sm sm:text-base border-2 border-google-dark rounded-xl flex items-center justify-center gap-2 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-60 cursor-pointer"
         >
           {isExporting ? (
@@ -554,7 +541,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           ) : (
             <>
               <Download className="w-4 h-4" />
-              <span>Export Official A4 PNG (300 DPI)</span>
+              <span>Download A4 Card (PNG)</span>
             </>
           )}
         </button>
