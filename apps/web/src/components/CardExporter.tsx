@@ -454,8 +454,8 @@ export const CardExporter: React.FC<CardExporterProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
-      <div className="w-full max-w-lg bg-white border-3 border-google-dark rounded-3xl p-5 sm:p-6 shadow-brutal-lg relative max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-lg bg-white border-2 sm:border-3 border-google-dark rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 shadow-brutal sm:shadow-brutal-lg relative max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"

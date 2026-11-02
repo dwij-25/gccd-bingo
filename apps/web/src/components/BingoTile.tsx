@@ -45,11 +45,11 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   if (isCenter) {
     return (
       <div
-        className="relative aspect-[324/290] select-none w-full"
+        className="relative aspect-[1/1] sm:aspect-[324/290] select-none w-full"
         aria-label="Google Developer Groups Cloud Ahmedabad Emblem"
       >
-        <div className="w-full h-full rounded-2xl sm:rounded-3xl border-3 border-google-dark shadow-brutal bg-white overflow-hidden flex flex-col items-center justify-center p-2">
-          <svg viewBox="0 0 100 80" className="w-16 h-16 sm:w-20 sm:h-20 select-none">
+        <div className="w-full h-full rounded-2xl sm:rounded-3xl border-2 sm:border-3 border-google-dark shadow-brutal bg-white overflow-hidden flex flex-col items-center justify-center p-2">
+          <svg viewBox="0 0 100 80" className="w-14 h-14 sm:w-20 sm:h-20 select-none">
             {/* Left Bracket < */}
             <rect x="23" y="14" width="13" height="34" rx="6.5" transform="rotate(45 29.5 31)" fill="#EA4335" stroke="#202124" strokeWidth="2.5" />
             <rect x="23" y="34" width="13" height="34" rx="6.5" transform="rotate(-45 29.5 51)" fill="#4285F4" stroke="#202124" strokeWidth="2.5" />
@@ -72,7 +72,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className="relative aspect-[324/290] cursor-pointer select-none perspective-1000 w-full"
+      className="relative aspect-[1/1] sm:aspect-[324/290] cursor-pointer select-none perspective-1000 w-full"
       role="button"
       tabIndex={0}
       aria-label={`Bingo challenge: ${tile.title}. Status: ${isDone ? 'Completed' : 'Not finished'}`}
@@ -92,12 +92,12 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              FRONT FACE
              ======================================================== */}
         <div
-          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl sm:rounded-3xl border-3 border-google-dark shadow-brutal ${colorClass} overflow-hidden`}
+          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-3 border-google-dark shadow-brutal ${colorClass} overflow-hidden`}
         >
           {!isDone ? (
             /* Empty State: exactly like reference image (centered text, no dots, no headers) */
-            <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 sm:px-4">
-              <span className="font-extrabold text-xs sm:text-sm md:text-base leading-tight text-google-dark select-none whitespace-pre-line">
+            <div className="w-full h-full flex items-center justify-center text-center px-1.5 py-2 sm:px-4">
+              <span className="font-extrabold text-[11px] sm:text-sm md:text-base leading-tight text-google-dark select-none whitespace-pre-line">
                 {tile.title}
               </span>
             </div>
@@ -114,15 +114,15 @@ export const BingoTile: React.FC<BingoTileProps> = ({
               </div>
 
               {/* Title goes UP beside the green dot */}
-              <div className="absolute top-2 inset-x-2 z-20 flex items-center justify-between gap-1.5 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl border-2 border-google-dark shadow-xs">
+              <div className="absolute top-1.5 inset-x-1.5 sm:top-2 sm:inset-x-2 z-20 flex items-center justify-between gap-1 bg-white/95 backdrop-blur-xs px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg sm:rounded-xl border border-google-dark/80 sm:border-2 sm:border-google-dark shadow-xs">
                 <span
-                  className="font-extrabold text-[10px] sm:text-[11px] leading-tight text-google-dark truncate"
+                  className="font-extrabold text-[9px] sm:text-[11px] leading-tight text-google-dark truncate"
                   title={tile.title}
                 >
                   {tile.title}
                 </span>
                 <div
-                  className="w-3.5 h-3.5 rounded-full border-2 border-google-dark bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)] flex-shrink-0"
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-google-dark sm:border-2 bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)] flex-shrink-0"
                   title="Completed"
                 />
               </div>
@@ -134,7 +134,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              BACK FACE
              ======================================================== */}
         <div
-          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl sm:rounded-3xl border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
+          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl sm:rounded-3xl border-2 sm:border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
         >
           {/* Top row on Back: Activity name beside signal dot + Undo Button */}
           <div className="flex items-center justify-between w-full gap-2">

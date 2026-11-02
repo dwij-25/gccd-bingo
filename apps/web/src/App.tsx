@@ -186,7 +186,7 @@ function BingoApp() {
       )}
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-3 sm:p-6">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start sm:justify-center px-2 py-2 sm:p-6 w-full max-w-full">
         {isLoading ? (
           <div className="flex flex-col items-center gap-3 py-16 animate-pulse">
             <div className="w-12 h-12 border-4 border-google-blue border-t-transparent rounded-full animate-spin" />
