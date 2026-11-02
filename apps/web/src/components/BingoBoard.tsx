@@ -59,104 +59,84 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
     <div className="w-full max-w-2xl mx-auto bg-white border-3 border-google-dark rounded-3xl p-4 sm:p-7 shadow-brutal-lg transition-all animate-fadeIn">
 
       {/* ========================================================
-           PARTICIPANT PROFILE RIBBON
+           MINIMAL PARTICIPANT BAR (Minimal, no avatar circle, no draft status)
            ======================================================== */}
-      <div className="bg-gray-50 border-2 border-google-dark rounded-2xl p-3 sm:p-4 mb-5 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-google-blue text-white font-black text-base flex items-center justify-center border-2 border-google-dark shadow-xs flex-shrink-0">
-              {participant.name.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-extrabold text-xs sm:text-sm text-google-dark leading-tight">
-                  Participant: <span className="font-bold">{participant.name}</span> ({participant.email})
-                </h2>
+      <div className="bg-gray-50 border-2 border-google-dark rounded-2xl px-3.5 py-2 mb-5 shadow-xs flex items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+          <span className="font-extrabold text-google-dark">
+            {participant.name} <span className="font-normal text-google-grey text-xs">({participant.email})</span>
+          </span>
 
-                {/* Bingo ID in monospace blue style with Copy Button */}
-                <div className="flex items-center gap-1.5 bg-blue-50 border-2 border-google-blue px-2.5 py-0.5 rounded-lg text-xs font-mono font-black text-google-blue shadow-xs">
-                  <span>ID: {card.bingo_id}</span>
-                  <button
-                    type="button"
-                    onClick={copyBingoId}
-                    className="p-0.5 hover:text-blue-700 transition cursor-pointer"
-                    title="Copy Bingo ID to clipboard"
-                    aria-label="Copy Bingo ID"
-                  >
-                    {copiedId ? (
-                      <CheckCheck className="w-3.5 h-3.5 text-google-green" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Submission Status shown SEPARATELY from the Bingo ID */}
-              <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                    isLocked
-                      ? 'bg-google-green/15 text-google-green border-google-green'
-                      : 'bg-amber-100 text-amber-800 border-amber-400'
-                  }`}
-                >
-                  {isLocked ? 'Status: Submitted & Final' : 'Status: Draft (In Progress)'}
-                </span>
-
-                <div className="text-[10px] text-google-grey flex items-center gap-1 font-medium">
-                  <Clock className="w-3 h-3" />
-                  <span>{lastSavedTime ? `Last saved at ${lastSavedTime}` : 'All changes saved'}</span>
-                </div>
-
-                {/* Visible Error State with Retry Button */}
-                {saveError && (
-                  <div className="flex items-center gap-1.5 bg-red-50 border border-google-red text-google-red text-[11px] font-bold px-2 py-0.5 rounded-lg">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>Save failed.</span>
-                    <button
-                      type="button"
-                      onClick={onSaveDraft}
-                      className="underline hover:text-red-800 ml-1 flex items-center gap-0.5 cursor-pointer"
-                    >
-                      <RefreshCw className="w-2.5 h-2.5" />
-                      <span>Retry</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Bingo ID in monospace blue style with Copy Button */}
+          <div className="flex items-center gap-1.5 bg-blue-50 border border-google-blue px-2 py-0.5 rounded-md text-xs font-mono font-black text-google-blue">
+            <span>ID: {card.bingo_id}</span>
+            <button
+              type="button"
+              onClick={copyBingoId}
+              className="p-0.5 hover:text-blue-700 transition cursor-pointer"
+              title="Copy Bingo ID to clipboard"
+              aria-label="Copy Bingo ID"
+            >
+              {copiedId ? (
+                <CheckCheck className="w-3 h-3 text-google-green" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </button>
           </div>
 
-          <button
-            onClick={onLogout}
-            className="p-2 text-google-grey hover:text-google-red border border-gray-300 rounded-xl hover:bg-gray-100 transition cursor-pointer"
-            title="Log out (your card remains saved in the database)"
-            aria-label="Logout"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          {lastSavedTime && (
+            <span className="text-[10px] text-google-grey font-medium flex items-center gap-1">
+              <Clock className="w-3 h-3" /> {lastSavedTime}
+            </span>
+          )}
+
+          {saveError && (
+            <div className="flex items-center gap-1 text-google-red text-[10px] font-bold">
+              <AlertCircle className="w-3 h-3" />
+              <span>Save failed.</span>
+              <button
+                type="button"
+                onClick={onSaveDraft}
+                className="underline hover:text-red-800 ml-0.5 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
+          )}
         </div>
+
+        <button
+          onClick={onLogout}
+          className="p-1.5 text-google-grey hover:text-google-red border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer flex-shrink-0"
+          title="Log out"
+          aria-label="Logout"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
 
       {/* ========================================================
-           DEV FEST BINGO HEADER
+           GOOGLE DEVELOPER GROUPS CLOUD AHMEDABAD BINGO HEADER
            ======================================================== */}
-      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5">
         <img
           src="/assets/left_bracket.png"
           alt="{"
-          className="w-8 sm:w-11 h-auto select-none"
+          className="w-7 sm:w-10 h-auto select-none"
           onError={(e) => {
             (e.target as HTMLElement).style.display = 'none';
           }}
         />
 
-        <div className="flex flex-col items-center">
-          <h1 className="text-4xl sm:text-5xl font-black text-google-dark tracking-tighter leading-none mb-1">
-            DevFest
+        <div className="flex flex-col items-center text-center">
+          <span className="text-xs sm:text-sm font-bold text-google-dark tracking-tight">
+            Google Developer Groups
+          </span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-google-dark tracking-tight leading-tight mb-2">
+            Cloud Ahmedabad
           </h1>
-          <div className="px-7 py-0.5 bg-white border-3 border-google-dark rounded-full text-base sm:text-lg font-black tracking-widest shadow-brutal text-google-dark">
+          <div className="px-8 py-0.5 bg-white border-3 border-google-dark rounded-full text-base sm:text-lg font-black tracking-widest shadow-brutal text-google-dark">
             BINGO
           </div>
         </div>
@@ -164,7 +144,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
         <img
           src="/assets/right_bracket.png"
           alt="}"
-          className="w-8 sm:w-11 h-auto select-none"
+          className="w-7 sm:w-10 h-auto select-none"
           onError={(e) => {
             (e.target as HTMLElement).style.display = 'none';
           }}

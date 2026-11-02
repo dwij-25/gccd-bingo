@@ -115,17 +115,46 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           <!-- Border around slot -->
           <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
         `;
+      } else if (s.index === 4) {
+        return `
+          <!-- Slot 4 Center Emblem -->
+          <g clip-path="url(#slot-clip-4)">
+            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" fill="#FFFFFF" />
+            <g transform="translate(${s.x + s.width / 2 - 50}, ${s.y + s.height / 2 - 40})">
+              <rect x="23" y="14" width="13" height="34" rx="6.5" transform="rotate(45 29.5 31)" fill="#EA4335" stroke="#202124" stroke-width="2.5" />
+              <rect x="23" y="34" width="13" height="34" rx="6.5" transform="rotate(-45 29.5 51)" fill="#4285F4" stroke="#202124" stroke-width="2.5" />
+              <rect x="64" y="14" width="13" height="34" rx="6.5" transform="rotate(-45 70.5 31)" fill="#34A853" stroke="#202124" stroke-width="2.5" />
+              <rect x="64" y="34" width="13" height="34" rx="6.5" transform="rotate(45 70.5 51)" fill="#FBBC04" stroke="#202124" stroke-width="2.5" />
+            </g>
+          </g>
+          <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
+        `;
       } else {
+        let line1 = '', line2 = '', line3 = '';
+        if (s.index === 0) { line1 = 'Selfie with'; line2 = 'a speaker'; }
+        else if (s.index === 1) { line1 = 'The full'; line2 = 'auditorium'; }
+        else if (s.index === 2) { line1 = 'A slide that'; line2 = 'taught you'; line3 = 'something'; }
+        else if (s.index === 3) { line1 = 'Selfie with'; line2 = 'a volunteer'; }
+        else if (s.index === 5) { line1 = 'Selfie with'; line2 = 'someone'; line3 = 'new'; }
+        else if (s.index === 6) { line1 = 'Photo booth'; line2 = 'or standee'; }
+        else if (s.index === 7) { line1 = 'A sponsor'; line2 = 'booth'; }
+        else if (s.index === 8) { line1 = 'Selfie with'; line2 = 'your badge'; }
+        else { line1 = s.title; }
+
+        const textSvg = line3 ? `
+          <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 - 24}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="22" text-anchor="middle">${escapeXml(line1)}</text>
+          <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 + 3}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="22" text-anchor="middle">${escapeXml(line2)}</text>
+          <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 + 30}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="22" text-anchor="middle">${escapeXml(line3)}</text>
+        ` : `
+          <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 - 12}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="23" text-anchor="middle">${escapeXml(line1)}</text>
+          <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 + 18}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="23" text-anchor="middle">${escapeXml(line2)}</text>
+        `;
+
         return `
           <!-- Slot ${s.index} Empty Draft -->
           <g clip-path="url(#slot-clip-${s.index})">
             <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" fill="${s.color}" />
-
-            <!-- Top Header Bar: Activity name beside red dot -->
-            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="44" fill="#FFFFFF" fill-opacity="0.94" />
-            <line x1="${s.x}" y1="${s.y + 44}" x2="${s.x + s.width}" y2="${s.y + 44}" stroke="#202124" stroke-width="2" />
-            <text x="${s.x + 14}" y="${s.y + 28}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="15">${escapeXml(displayTitle)}</text>
-            <circle cx="${s.x + s.width - 22}" cy="${s.y + 22}" r="9" fill="#EA4335" stroke="#202124" stroke-width="2.5" />
+            ${textSvg}
           </g>
           <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
         `;

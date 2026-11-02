@@ -93,62 +93,54 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              FRONT FACE
              ======================================================== */}
         <div
-          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal ${colorClass} overflow-hidden`}
+          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl sm:rounded-3xl border-3 border-google-dark shadow-brutal ${colorClass} overflow-hidden`}
         >
-          {/* Completed Photo Background (Underneath top header) */}
-          {isDone && tile.image_url && (
-            <div className="absolute inset-0 rounded-2xl overflow-hidden bg-black z-0">
-              <img
-                src={tile.image_url}
-                alt={tile.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          {!isDone ? (
+            /* Empty State: exactly like reference image (centered text or center emblem, no dots, no headers) */
+            index === 4 ? (
+              <div className="w-full h-full flex flex-col items-center justify-center p-2">
+                <svg viewBox="0 0 100 80" className="w-16 h-16 sm:w-20 sm:h-20 select-none">
+                  {/* Left Bracket < */}
+                  <rect x="23" y="14" width="13" height="34" rx="6.5" transform="rotate(45 29.5 31)" fill="#EA4335" stroke="#202124" strokeWidth="2.5" />
+                  <rect x="23" y="34" width="13" height="34" rx="6.5" transform="rotate(-45 29.5 51)" fill="#4285F4" stroke="#202124" strokeWidth="2.5" />
+                  {/* Right Bracket > */}
+                  <rect x="64" y="14" width="13" height="34" rx="6.5" transform="rotate(-45 70.5 31)" fill="#34A853" stroke="#202124" strokeWidth="2.5" />
+                  <rect x="64" y="34" width="13" height="34" rx="6.5" transform="rotate(45 70.5 51)" fill="#FBBC04" stroke="#202124" strokeWidth="2.5" />
+                </svg>
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 sm:px-4">
+                <span className="font-extrabold text-xs sm:text-sm md:text-base leading-tight text-google-dark select-none whitespace-pre-line">
+                  {tile.title}
+                </span>
+              </div>
+            )
+          ) : (
+            /* Uploaded State: Photo fills card + title goes UP beside green dot */
+            <>
+              {/* Photo Background */}
+              <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden bg-black z-0">
+                <img
+                  src={tile.image_url!}
+                  alt={tile.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-          {/* Top Header Row: Activity Title beside the Signal Dot (ALWAYS visible, even when image is saved) */}
-          <div className="flex items-center justify-between w-full gap-2 relative z-20 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl border-2 border-google-dark shadow-xs">
-            <span
-              className="font-extrabold text-[10px] sm:text-[11px] leading-tight text-google-dark truncate"
-              title={tile.title}
-            >
-              {tile.title}
-            </span>
-
-            {/* Signal Dot: Red = Not finished, Green = Completed */}
-            <div
-              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark flex-shrink-0 transition-colors duration-300 ${
-                isDone
-                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
-                  : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
-              }`}
-              title={isDone ? 'Completed' : 'Not finished'}
-            />
-          </div>
-
-          {/* Center Graphic/Icon when NO photo is uploaded */}
-          {!isDone && (
-            <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center my-0.5 overflow-hidden">
-              {index === 4 ? (
-                <div className="flex flex-col items-center justify-center">
-                  <img
-                    src="/assets/center_gdg_logo.png"
-                    alt="GDG Logo"
-                    className="w-12 sm:w-16 h-auto object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  <span className="font-black text-[11px] sm:text-xs text-google-dark mt-0.5">
-                    GCCD Spirit
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center px-1">
-                  <i className={`fas ${tile.icon || 'fa-camera'} text-xl sm:text-2xl text-google-dark mb-1`} />
-                </div>
-              )}
-            </div>
+              {/* Title goes UP beside the green dot */}
+              <div className="absolute top-2 inset-x-2 z-20 flex items-center justify-between gap-1.5 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl border-2 border-google-dark shadow-xs">
+                <span
+                  className="font-extrabold text-[10px] sm:text-[11px] leading-tight text-google-dark truncate"
+                  title={tile.title}
+                >
+                  {tile.title}
+                </span>
+                <div
+                  className="w-3.5 h-3.5 rounded-full border-2 border-google-dark bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)] flex-shrink-0"
+                  title="Completed"
+                />
+              </div>
+            </>
           )}
         </div>
 
@@ -156,7 +148,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              BACK FACE
              ======================================================== */}
         <div
-          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
+          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl sm:rounded-3xl border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
         >
           {/* Top row on Back: Activity name beside signal dot + Undo Button */}
           <div className="flex items-center justify-between w-full gap-2">

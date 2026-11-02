@@ -24,59 +24,59 @@ const INITIAL_PARTICIPANTS: Participant[] = [
 
 const DEFAULT_TILES = [
   {
-    title: 'Take a picture of a slide',
-    description: 'Capture any presentation slide from a keynote, tech session, or workshop.',
-    icon: 'presentation',
-    color: 'tile-yellow'
-  },
-  {
     title: 'Selfie with a speaker',
     description: 'Find a session speaker, thank them for their talk, and take a photo together.',
     icon: 'selfie',
-    color: 'tile-coral'
+    color: 'tile-yellow'
   },
   {
-    title: 'Ask a question during session',
-    description: 'Engage during a presentation Q&A or discussion and capture the moment.',
-    icon: 'question',
+    title: 'The full auditorium',
+    description: 'Capture a photo of the main hall or auditorium filled with attendees.',
+    icon: 'auditorium',
+    color: 'tile-pink'
+  },
+  {
+    title: 'A slide that taught you something',
+    description: 'Take a picture of a slide from a keynote or session that taught you something new.',
+    icon: 'slide',
     color: 'tile-blue'
   },
   {
-    title: 'Visit a sponsor booth',
-    description: 'Explore the community partners and grab a picture at a sponsor booth.',
-    icon: 'booth',
-    color: 'tile-green'
+    title: 'Selfie with a volunteer',
+    description: 'Say hi to an event volunteer or organizer and snap a selfie.',
+    icon: 'volunteer',
+    color: 'tile-blue'
   },
   {
-    title: 'GDG Cloud Logo / Backdrop',
-    description: 'Take a picture with the official Google Cloud Developer Community logo.',
+    title: 'GDG Cloud Ahmedabad',
+    description: 'Take a photo at the official Google Developer Groups Cloud Ahmedabad stage or backdrop.',
     icon: 'logo',
     color: 'tile-white',
     isCenter: true
   },
   {
-    title: 'Share on Social Media',
-    description: 'Post about GCCD with hashtag #GCCD2026 on LinkedIn/X and screenshot it.',
-    icon: 'social',
-    color: 'tile-purple'
+    title: 'Selfie with someone new',
+    description: 'Network with a fellow community member you have not met before and take a selfie.',
+    icon: 'network',
+    color: 'tile-green'
   },
   {
-    title: 'Connect with fellow attendee',
-    description: 'Make a new tech friend, exchange contacts, and snap a selfie.',
-    icon: 'network',
+    title: 'Photo booth or standee',
+    description: 'Strike a pose and take a picture at the official event photo booth or event standee.',
+    icon: 'booth',
+    color: 'tile-green'
+  },
+  {
+    title: 'A sponsor booth',
+    description: 'Visit our partner exhibition booths and take a picture at a sponsor booth.',
+    icon: 'sponsor',
     color: 'tile-yellow'
   },
   {
-    title: 'Showcase GCCD Swag / Stickers',
-    description: 'Show off your badge, event t-shirt, stickers, or swag items.',
-    icon: 'swag',
-    color: 'tile-coral'
-  },
-  {
-    title: 'Attend Closing Ceremony',
-    description: 'Be there for the closing ceremony, community photo, and prize announcements.',
-    icon: 'celebrate',
-    color: 'tile-blue'
+    title: 'Selfie with your badge',
+    description: 'Proudly show off your official event attendee badge with a selfie.',
+    icon: 'badge',
+    color: 'tile-pink'
   }
 ];
 

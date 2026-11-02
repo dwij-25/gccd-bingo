@@ -31,8 +31,8 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
     color: '#FFE7A5',
-    title: 'Take a picture of a slide',
-    label: 'Slide Photo'
+    title: 'Selfie with a speaker',
+    label: 'Selfie with a speaker'
   },
   {
     index: 1,
@@ -42,8 +42,8 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
     color: '#FCE8E6',
-    title: 'Selfie with a speaker',
-    label: 'Speaker Selfie'
+    title: 'The full auditorium',
+    label: 'The full auditorium'
   },
   {
     index: 2,
@@ -53,8 +53,8 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
     color: '#E8F0FE',
-    title: 'Ask a question during session',
-    label: 'Q&A Moment'
+    title: 'A slide that taught you something',
+    label: 'A slide that taught you something'
   },
   {
     index: 3,
@@ -63,9 +63,9 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     width: TILE_SLOT_WIDTH,
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
-    color: '#E6F4EA',
-    title: 'Visit a sponsor booth',
-    label: 'Sponsor Booth'
+    color: '#E8F0FE',
+    title: 'Selfie with a volunteer',
+    label: 'Selfie with a volunteer'
   },
   {
     index: 4,
@@ -75,8 +75,8 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
     color: '#FFFFFF',
-    title: 'GDG Cloud Logo / Backdrop',
-    label: 'Community Logo',
+    title: 'GDG Cloud Ahmedabad',
+    label: 'GDG Cloud Ahmedabad',
     isCenter: true
   },
   {
@@ -86,9 +86,9 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     width: TILE_SLOT_WIDTH,
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
-    color: '#F3E8FD',
-    title: 'Share on Social Media',
-    label: 'Social Post'
+    color: '#E6F4EA',
+    title: 'Selfie with someone new',
+    label: 'Selfie with someone new'
   },
   {
     index: 6,
@@ -97,9 +97,9 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     width: TILE_SLOT_WIDTH,
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
-    color: '#FEF7E0',
-    title: 'Connect with fellow attendee',
-    label: 'Attendee Selfie'
+    color: '#E6F4EA',
+    title: 'Photo booth or standee',
+    label: 'Photo booth or standee'
   },
   {
     index: 7,
@@ -108,9 +108,9 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     width: TILE_SLOT_WIDTH,
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
-    color: '#FCE8E6',
-    title: 'Showcase GCCD Swag / Stickers',
-    label: 'Swag & Stickers'
+    color: '#FFE7A5',
+    title: 'A sponsor booth',
+    label: 'A sponsor booth'
   },
   {
     index: 8,
@@ -119,8 +119,8 @@ export const TEMPLATE_SLOTS: SlotConfig[] = [
     width: TILE_SLOT_WIDTH,
     height: TILE_SLOT_HEIGHT,
     radius: TILE_SLOT_RADIUS,
-    color: '#E8F0FE',
-    title: 'Attend Closing Ceremony',
-    label: 'Closing Ceremony'
+    color: '#FCE8E6',
+    title: 'Selfie with your badge',
+    label: 'Selfie with your badge'
   }
 ];
