@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Ambient Google dots pattern */
+.ambient-dots-bg {
+  background-image: 
+    radial-gradient(#4285F4 1.5px, transparent 1.5px),
+    radial-gradient(#EA4335 1.5px, transparent 1.5px),
+    radial-gradient(#FBBC04 1.5px, transparent 1.5px),
+    radial-gradient(#34A853 1.5px, transparent 1.5px);
+  background-size: 80px 80px;
+  background-position: 0 0, 40px 40px, 20px 60px, 60px 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

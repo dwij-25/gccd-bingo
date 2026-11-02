@@ -1,0 +1,39 @@
+name: GCCD Bingo CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install Monorepo Dependencies
+      run: npm ci
+
+    - name: Typecheck Backend
+      run: npm --workspace=apps/api run typecheck
+
+    - name: Typecheck Frontend
+      run: npm --workspace=apps/web run typecheck
+
+    - name: Build Backend (apps/api)
+      run: npm --workspace=apps/api run build
+
+    - name: Build Frontend (apps/web)
+      run: npm --workspace=apps/web run build
