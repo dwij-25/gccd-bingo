@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Camera, RefreshCw, Trash2, Undo2, CheckCircle2, Sliders } from 'lucide-react';
+import { Camera, RefreshCw, Trash2, Undo2, Sliders } from 'lucide-react';
 import { BingoTile as BingoTileType } from '../types/bingo.js';
 
 interface BingoTileProps {
@@ -67,7 +67,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
       className="relative aspect-[324/290] cursor-pointer select-none perspective-1000 w-full"
       role="button"
       tabIndex={0}
-      aria-label={`Bingo challenge ${index + 1}: ${tile.title}. Status: ${isDone ? 'Completed' : 'Not finished'}`}
+      aria-label={`Bingo challenge: ${tile.title}. Status: ${isDone ? 'Completed' : 'Not finished'}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -90,98 +90,95 @@ export const BingoTile: React.FC<BingoTileProps> = ({
         }`}
       >
         {/* ========================================================
-             FRONT FACE (Solid, steady, no hover float translation)
+             FRONT FACE
              ======================================================== */}
         <div
           className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal ${colorClass} overflow-hidden`}
         >
-          {/* Header row: Challenge # and Signal Dot */}
-          <div className="flex items-center justify-between w-full relative z-10">
-            <span className="text-[10px] sm:text-xs font-black bg-white/90 px-1.5 py-0.5 rounded border border-google-dark">
-              #{index + 1}
+          {/* Completed Photo Background (Underneath top header) */}
+          {isDone && tile.image_url && (
+            <div className="absolute inset-0 rounded-2xl overflow-hidden bg-black z-0">
+              <img
+                src={tile.image_url}
+                alt={tile.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Top Header Row: Activity Title beside the Signal Dot (ALWAYS visible, even when image is saved) */}
+          <div className="flex items-center justify-between w-full gap-2 relative z-20 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl border-2 border-google-dark shadow-xs">
+            <span
+              className="font-extrabold text-[10px] sm:text-[11px] leading-tight text-google-dark truncate"
+              title={tile.title}
+            >
+              {tile.title}
             </span>
 
             {/* Signal Dot: Red = Not finished, Green = Completed */}
             <div
-              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark transition-colors duration-300 ${
+              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark flex-shrink-0 transition-colors duration-300 ${
                 isDone
                   ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
                   : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
               }`}
-              title={isDone ? 'Task Completed' : 'Not Finished'}
+              title={isDone ? 'Completed' : 'Not finished'}
             />
           </div>
 
-          {/* Center Content */}
-          <div className="relative flex-1 flex flex-col items-center justify-center text-center my-0.5 overflow-hidden">
-            {index === 4 && !isDone ? (
-              <div className="flex flex-col items-center justify-center">
-                <img
-                  src="/assets/center_gdg_logo.png"
-                  alt="GDG Logo"
-                  className="w-12 sm:w-16 h-auto object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <span className="font-black text-[11px] sm:text-xs text-google-dark mt-0.5">
-                  GCCD Spirit
-                </span>
-              </div>
-            ) : !isDone ? (
-              <div className="flex flex-col items-center justify-center px-1">
-                <i className={`fas ${tile.icon || 'fa-camera'} text-lg sm:text-xl text-google-dark mb-1`} />
-                <h3 className="font-extrabold text-[11px] sm:text-xs leading-tight text-google-dark line-clamp-2">
-                  {tile.title}
-                </h3>
-              </div>
-            ) : null}
-
-            {/* Photo Thumbnail Overlay when Done */}
-            {isDone && tile.image_url && (
-              <div className="absolute inset-0 rounded-xl overflow-hidden border border-google-dark/50 bg-black">
-                <img
-                  src={tile.image_url}
-                  alt={tile.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-1 inset-x-1 bg-black/80 backdrop-blur-xs text-white text-[9px] font-bold py-0.5 px-1.5 rounded-md flex items-center justify-center gap-1">
-                  <CheckCircle2 className="w-2.5 h-2.5 text-google-green" />
-                  <span>Done</span>
+          {/* Center Graphic/Icon when NO photo is uploaded */}
+          {!isDone && (
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center my-0.5 overflow-hidden">
+              {index === 4 ? (
+                <div className="flex flex-col items-center justify-center">
+                  <img
+                    src="/assets/center_gdg_logo.png"
+                    alt="GDG Logo"
+                    className="w-12 sm:w-16 h-auto object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <span className="font-black text-[11px] sm:text-xs text-google-dark mt-0.5">
+                    GCCD Spirit
+                  </span>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer Flip Indicator */}
-          <div className="text-[9px] font-bold uppercase tracking-wider text-google-dark/70 text-center flex items-center justify-center gap-1 relative z-10">
-            <RefreshCw className="w-2.5 h-2.5" />
-            <span>Flip</span>
-          </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center px-1">
+                  <i className={`fas ${tile.icon || 'fa-camera'} text-xl sm:text-2xl text-google-dark mb-1`} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ========================================================
-             BACK FACE (Solid, steady, pure light theme)
+             BACK FACE
              ======================================================== */}
         <div
           className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
         >
-          {/* Top row on Back */}
-          <div className="flex items-center justify-between w-full">
-            <div
-              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark ${
-                isDone
-                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
-                  : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
-              }`}
-            />
+          {/* Top row on Back: Activity name beside signal dot + Undo Button */}
+          <div className="flex items-center justify-between w-full gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <div
+                className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark flex-shrink-0 ${
+                  isDone
+                    ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
+                    : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
+                }`}
+              />
+              <span className="font-extrabold text-[10px] sm:text-[11px] text-google-dark truncate">
+                {tile.title}
+              </span>
+            </div>
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleFlip(index);
               }}
-              className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 border border-google-dark transition cursor-pointer"
+              className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 border border-google-dark transition cursor-pointer flex-shrink-0"
               title="Flip Back"
               aria-label="Flip Back to Front"
             >
@@ -260,7 +257,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           <div className="text-[9px] text-google-grey font-medium truncate">
-            {isDone ? 'Completed challenge' : 'Pending challenge'}
+            {isDone ? 'Photo uploaded' : 'Click to upload photo'}
           </div>
         </div>
       </div>

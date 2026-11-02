@@ -10,6 +10,19 @@ interface CardExporterProps {
   card: BingoCard;
 }
 
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+}
+
 // Convert any image URL (local asset, relative path, or external) to a Data URI
 async function urlToDataUri(url: string): Promise<string> {
   if (url.startsWith('data:')) return url;
@@ -81,8 +94,11 @@ export const CardExporter: React.FC<CardExporterProps> = ({
 
     // Render layers for each slot
     const slotsSvg = TEMPLATE_SLOTS.map(s => {
+      const tile = card.tiles.find(t => t.tile_index === s.index);
       const photoUri = photoDataUris[s.index];
       const hasPhoto = Boolean(photoUri);
+      const activityTitle = tile?.title || s.title || s.label;
+      const displayTitle = activityTitle.length > 27 ? activityTitle.slice(0, 25) + '…' : activityTitle;
 
       if (hasPhoto) {
         return `
@@ -90,9 +106,11 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           <g clip-path="url(#slot-clip-${s.index})">
             <image href="${photoUri}" x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" preserveAspectRatio="xMidYMid slice" />
             
-            <!-- Bottom Status Label Strip INSIDE Slot -->
-            <rect x="${s.x}" y="${s.y + s.height - 38}" width="${s.width}" height="38" fill="#1E1E1E" fill-opacity="0.85" />
-            <text x="${s.x + s.width / 2}" y="${s.y + s.height - 14}" fill="#34A853" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="16" text-anchor="middle">✓ Completed</text>
+            <!-- Top Header Bar: Activity name beside green dot -->
+            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="44" fill="#FFFFFF" fill-opacity="0.94" />
+            <line x1="${s.x}" y1="${s.y + 44}" x2="${s.x + s.width}" y2="${s.y + 44}" stroke="#202124" stroke-width="2" />
+            <text x="${s.x + 14}" y="${s.y + 28}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="15">${escapeXml(displayTitle)}</text>
+            <circle cx="${s.x + s.width - 22}" cy="${s.y + 22}" r="9" fill="#34A853" stroke="#202124" stroke-width="2.5" />
           </g>
           <!-- Border around slot -->
           <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
@@ -102,11 +120,12 @@ export const CardExporter: React.FC<CardExporterProps> = ({
           <!-- Slot ${s.index} Empty Draft -->
           <g clip-path="url(#slot-clip-${s.index})">
             <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" fill="${s.color}" />
-            <text x="${s.x + s.width / 2}" y="${s.y + s.height / 2 - 10}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="15" text-anchor="middle">${s.label}</text>
-            
-            <!-- Bottom Status Label Strip -->
-            <rect x="${s.x}" y="${s.y + s.height - 38}" width="${s.width}" height="38" fill="#1E1E1E" fill-opacity="0.75" />
-            <text x="${s.x + s.width / 2}" y="${s.y + s.height - 14}" fill="#EA4335" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="15" text-anchor="middle">● Not finished</text>
+
+            <!-- Top Header Bar: Activity name beside red dot -->
+            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="44" fill="#FFFFFF" fill-opacity="0.94" />
+            <line x1="${s.x}" y1="${s.y + 44}" x2="${s.x + s.width}" y2="${s.y + 44}" stroke="#202124" stroke-width="2" />
+            <text x="${s.x + 14}" y="${s.y + 28}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="15">${escapeXml(displayTitle)}</text>
+            <circle cx="${s.x + s.width - 22}" cy="${s.y + 22}" r="9" fill="#EA4335" stroke="#202124" stroke-width="2.5" />
           </g>
           <rect x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" rx="${s.radius}" ry="${s.radius}" fill="none" stroke="#202124" stroke-width="4" />
         `;

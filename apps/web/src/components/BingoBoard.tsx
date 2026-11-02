@@ -171,20 +171,6 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
         />
       </div>
 
-      {/* ========================================================
-           SIGNAL LEGEND (Red = Not Finished, Green = Completed)
-           ======================================================== */}
-      <div className="flex items-center justify-center gap-6 mb-4 text-xs font-bold text-google-dark">
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-full border-2 border-google-dark bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.7)]" />
-          <span>Red Dot = Not Finished</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-full border-2 border-google-dark bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.8)]" />
-          <span>Green Dot = Completed</span>
-        </div>
-      </div>
-
       {/* Progress Track */}
       <div className="mb-5">
         <div className="flex justify-between text-xs font-extrabold mb-1.5 text-google-dark">
