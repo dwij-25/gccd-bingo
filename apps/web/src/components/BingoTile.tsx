@@ -167,47 +167,65 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           {/* Description & Action Controls */}
-          <div className="flex-1 flex flex-col justify-center items-center text-center my-0.5 px-0.5 min-h-0 overflow-hidden">
-            <p className="text-[9px] sm:text-[10px] font-bold text-google-grey leading-tight line-clamp-2 mb-1 flex-shrink-0">
+          <div className="flex-1 flex flex-col justify-between items-center text-center my-0.5 px-0.5 min-h-0 overflow-hidden">
+            <p className="text-[9px] sm:text-[10px] font-bold text-google-grey leading-tight line-clamp-1 flex-shrink-0">
               {tile.description}
             </p>
 
             {isDone && tile.image_url ? (
-              <div className="w-full flex flex-col items-center gap-1 flex-1 justify-center min-h-0">
-                <div className="w-full h-7 sm:h-8 rounded-md overflow-hidden border border-google-dark bg-black flex-shrink-0">
-                  <img src={tile.image_url} alt="Captured challenge" className="w-full h-full object-cover" />
-                </div>
-                {!isLocked && (
-                  <div className="flex gap-1 w-full flex-shrink-0">
-                    {/* ADJUST BUTTON */}
+              <div className="w-full flex flex-col gap-1.5 flex-1 justify-center my-auto min-h-0">
+                {!isLocked ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-1 w-full">
+                      {/* ADJUST BUTTON */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAdjustPhoto(index);
+                        }}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        className="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                        title="Adjust photo crop"
+                      >
+                        <Sliders className="w-3 h-3 text-amber-700 flex-shrink-0" />
+                        <span>Adjust</span>
+                      </button>
+
+                      {/* RETAKE BUTTON */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onInitiateCamera(index, tile.title);
+                        }}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        className="py-1.5 px-1 bg-blue-50 hover:bg-blue-100 text-google-blue border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                        title="Retake photo"
+                      >
+                        <RefreshCw className="w-3 h-3 text-google-blue flex-shrink-0" />
+                        <span>Retake</span>
+                      </button>
+                    </div>
+
+                    {/* DELETE BUTTON */}
                     <button
                       type="button"
-                      onClick={() => onAdjustPhoto(index)}
-                      className="flex-1 py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold bg-amber-50 text-amber-700 border border-google-dark rounded flex items-center justify-center gap-0.5 hover:bg-amber-100 transition cursor-pointer"
-                      title="Adjust crop & position"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemovePhoto(index);
+                      }}
+                      onTouchEnd={(e) => e.stopPropagation()}
+                      className="w-full py-1.5 px-1 bg-red-50 hover:bg-red-100 text-google-red border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                      title="Delete photo"
                     >
-                      <Sliders className="w-2.5 h-2.5" />
-                      <span>Adjust</span>
+                      <Trash2 className="w-3 h-3 text-google-red flex-shrink-0" />
+                      <span>Delete</span>
                     </button>
-                    {/* RETAKE BUTTON */}
-                    <button
-                      type="button"
-                      onClick={() => onInitiateCamera(index, tile.title)}
-                      className="flex-1 py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold bg-blue-50 text-google-blue border border-google-dark rounded flex items-center justify-center gap-0.5 hover:bg-blue-100 transition cursor-pointer"
-                      title="Retake picture"
-                    >
-                      <RefreshCw className="w-2.5 h-2.5" />
-                      <span>Retake</span>
-                    </button>
-                    {/* REMOVE BUTTON */}
-                    <button
-                      type="button"
-                      onClick={() => onRemovePhoto(index)}
-                      className="p-0.5 sm:p-1 text-[8px] sm:text-[9px] font-bold bg-red-50 text-google-red border border-google-dark rounded flex items-center justify-center hover:bg-red-100 transition cursor-pointer"
-                      title="Remove picture"
-                    >
-                      <Trash2 className="w-2.5 h-2.5" />
-                    </button>
+                  </>
+                ) : (
+                  <div className="text-[10px] font-bold text-google-grey text-center">
+                    Card Submitted
                   </div>
                 )}
               </div>
@@ -224,11 +242,15 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                   <button
                     type="button"
                     disabled={isLocked}
-                    onClick={() => onInitiateCamera(index, tile.title)}
-                    className="w-full py-1 sm:py-1.5 px-1 bg-google-blue text-white text-[10px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-lg sm:rounded-xl flex items-center justify-center gap-1 shadow-xs hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onInitiateCamera(index, tile.title);
+                    }}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                    className="w-full py-1.5 sm:py-2 px-1 bg-google-blue text-white text-[11px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer flex-shrink-0 select-none"
                   >
-                    <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-                    <span className="truncate">Click Picture</span>
+                    <Camera className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">Take Photo</span>
                   </button>
                 )}
               </div>

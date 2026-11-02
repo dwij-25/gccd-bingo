@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Download, Award, RefreshCw, Key, Trash2 } from 'lucide-react';
 import { api } from '../lib/api.js';
+import { generateBingoCard, downloadBlob } from '../lib/cardExportUtil.js';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [stats, setStats] = useState<any>({});
   const [statusFilter, setStatusFilter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,6 +52,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       await loadData();
     } catch (err: any) {
       alert('Failed to update winner status: ' + err.message);
+    }
+  };
+
+  const handleDownloadParticipantA4 = async (sub: any) => {
+    const targetId = sub.id || sub.bingo_id;
+    setDownloadingId(targetId);
+    try {
+      const participant = {
+        id: sub.participant_id || sub.id,
+        name: sub.name || 'Attendee',
+        email: sub.email || '',
+        organization: sub.organization || 'Attendee'
+      };
+      const card = {
+        id: sub.id,
+        participant_id: sub.participant_id || sub.id,
+        bingo_id: sub.bingo_id || 'Draft',
+        status: sub.status || 'draft',
+        tiles: sub.tiles || []
+      };
+
+      const { blob, fileName } = await generateBingoCard(participant as any, card as any, 'google-cloud');
+      downloadBlob(blob, fileName);
+    } catch (err: any) {
+      console.error('Failed to export A4 Bingo Card:', err);
+      alert('Failed to generate A4 Bingo Card: ' + (err.message || 'Unknown error'));
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -225,20 +255,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         {sub.submitted_at ? new Date(sub.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                       </td>
                       <td className="p-3 text-right">
-                        {sub.bingo_id && (
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Download A4 Card for ANY participant (including drafts) */}
                           <button
                             type="button"
-                            onClick={() => handleMarkWinner(sub.bingo_id, sub.status !== 'winner')}
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border border-google-dark transition flex items-center gap-1 ml-auto cursor-pointer ${
-                              sub.status === 'winner'
-                                ? 'bg-red-50 text-google-red hover:bg-red-100'
-                                : 'bg-green-50 text-google-green hover:bg-green-100'
-                            }`}
+                            disabled={downloadingId === (sub.id || sub.bingo_id)}
+                            onClick={() => handleDownloadParticipantA4(sub)}
+                            className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-google-dark bg-white hover:bg-gray-100 text-google-dark transition flex items-center gap-1 cursor-pointer shadow-xs disabled:opacity-50"
+                            title="Download participant's A4 Bingo Card PNG"
                           >
-                            <Award className="w-3 h-3" />
-                            <span>{sub.status === 'winner' ? 'Revoke Win' : 'Mark Winner'}</span>
+                            {downloadingId === (sub.id || sub.bingo_id) ? (
+                              <RefreshCw className="w-3 h-3 animate-spin text-google-blue" />
+                            ) : (
+                              <Download className="w-3 h-3 text-google-blue" />
+                            )}
+                            <span>A4 Card</span>
                           </button>
-                        )}
+
+                          {sub.bingo_id && (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkWinner(sub.bingo_id, sub.status !== 'winner')}
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border border-google-dark transition flex items-center gap-1 cursor-pointer ${
+                                sub.status === 'winner'
+                                  ? 'bg-red-50 text-google-red hover:bg-red-100'
+                                  : 'bg-green-50 text-google-green hover:bg-green-100'
+                              }`}
+                            >
+                              <Award className="w-3 h-3" />
+                              <span>{sub.status === 'winner' ? 'Revoke' : 'Winner'}</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -279,7 +279,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
             className="w-full sm:w-auto px-5 py-2 sm:py-2.5 bg-google-blue text-white text-xs font-extrabold border-2 border-google-dark rounded-full flex items-center justify-center gap-2 shadow-brutal hover:bg-blue-600 active:shadow-none transition animate-fadeIn cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download A4 Card (PNG)</span>
+            <span>Download Bingo A4 Card (PNG)</span>
           </button>
         )}
       </div>

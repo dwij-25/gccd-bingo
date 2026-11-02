@@ -557,6 +557,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       let query = `
         SELECT 
           c.id,
+          c.participant_id,
           c.bingo_id,
           c.status,
           c.total_completed,
@@ -565,16 +566,32 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           c.created_at,
           p.name,
           p.email,
-          p.organization
+          p.organization,
+          COALESCE(
+            json_agg(
+              json_build_object(
+                'id', t.id,
+                'tile_index', t.tile_index,
+                'title', t.title,
+                'description', t.description,
+                'status', t.status,
+                'image_url', t.image_url,
+                'crop_data', t.crop_data,
+                'uploaded_at', t.uploaded_at
+              ) ORDER BY t.tile_index ASC
+            ) FILTER (WHERE t.id IS NOT NULL),
+            '[]'
+          ) AS tiles
         FROM gccd_bingo_cards c
         JOIN gccd_participants p ON c.participant_id = p.id
+        LEFT JOIN gccd_bingo_tiles t ON t.card_id = c.id
       `;
       const params: any[] = [];
       if (statusFilter && statusFilter.trim().length > 0) {
         params.push(statusFilter.trim().toLowerCase());
         query += ` WHERE LOWER(c.status) = $1`;
       }
-      query += ` ORDER BY c.submitted_at DESC NULLS LAST, c.updated_at DESC`;
+      query += ` GROUP BY c.id, p.id ORDER BY c.submitted_at DESC NULLS LAST, c.updated_at DESC`;
 
       const listRes = await client.query(query, params);
 
