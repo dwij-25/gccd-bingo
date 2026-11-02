@@ -98,6 +98,9 @@ export function useBingoCard(initialCard: BingoCard | null) {
           };
         });
 
+        // Automatically flip tile back to the front (main) face once photo is captured/cropped
+        setFlippedTileIndex(null);
+
         const d = new Date();
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         setHasUnsavedChanges(false);

@@ -157,8 +157,8 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
         croppedAreaPixels: croppedAreaPixels || undefined
       };
 
-      await onConfirmCrop(croppedDataUrl, cropParams);
       onClose();
+      await onConfirmCrop(croppedDataUrl, cropParams);
     } catch (err) {
       console.error('Failed to crop image:', err);
     } finally {

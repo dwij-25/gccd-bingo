@@ -181,7 +181,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         </g>
 
         <!-- Layer 5: Footer Text -->
-        <text x="620" y="1710" fill="#5F6368" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="600" font-size="16" text-anchor="middle">Google Cloud Community Day 2026 • Verified Card • Generated ${new Date().toLocaleDateString()}</text>
+        <text x="620" y="1710" fill="#5F6368" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="600" font-size="16" text-anchor="middle">Google Cloud Community Day 2026</text>
       </svg>
     `;
 
