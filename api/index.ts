@@ -278,11 +278,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       }
       const card = cardRes.rows[0];
 
-      if (card.status !== 'draft') {
-        return sendJson(res, 400, { error: 'Cannot modify a submitted card' });
-      }
-
-      // Update tiles
+      // Update tiles (allowed on draft and submitted cards)
       for (const t of tiles) {
         if (typeof t.tile_index === 'number') {
           const hasImg = t.image_url && t.image_url.trim().length > 0;
@@ -345,10 +341,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         }
         const card = cardRes.rows[0];
 
-        if (card.status !== 'draft') {
-          return sendJson(res, 400, { error: 'Cannot modify a submitted card' });
-        }
-
         const now = new Date().toISOString();
         await client.query(
           `UPDATE gccd_bingo_tiles
@@ -376,7 +368,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           imageUrl,
           updatedAt: now,
           totalCompleted,
-          canSubmit: totalCompleted >= 9
+          canSubmit: totalCompleted >= 8
         });
       }
 
@@ -393,10 +385,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           return sendJson(res, 404, { error: 'Card not found' });
         }
         const card = cardRes.rows[0];
-
-        if (card.status !== 'draft') {
-          return sendJson(res, 400, { error: 'Cannot modify a submitted card' });
-        }
 
         await client.query(
           `UPDATE gccd_bingo_tiles
@@ -428,7 +416,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       }
     }
 
-    // 6. CARD: SUBMIT
+    // 6. CARD: SUBMIT / RESUBMIT
     if (pathname === '/card/submit' && method === 'POST') {
       const body = await parseJsonBody(req);
       const participantId = body.participantId;
@@ -449,9 +437,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       );
       const completedCount = parseInt(countRes.rows[0].count, 10);
 
-      if (completedCount < 9) {
+      if (completedCount < 8) {
         return sendJson(res, 400, {
-          error: `Cannot submit: Only ${completedCount} of 9 challenges are completed. All 9 tiles must be green.`
+          error: `Cannot submit: Only ${completedCount} of 8 challenges are completed. All 8 challenge tiles must be green.`
         });
       }
 
@@ -463,11 +451,60 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
       card.status = 'submitted';
       card.submitted_at = now;
+      card.updated_at = now;
 
       return sendJson(res, 200, {
         success: true,
         card,
         bingoId: card.bingo_id
+      });
+    }
+
+    // 6.5 CARD: RESET PROGRESS
+    if (pathname === '/card/reset' && method === 'POST') {
+      const body = await parseJsonBody(req);
+      const participantId = body.participantId;
+
+      if (!participantId) {
+        return sendJson(res, 400, { error: 'participantId is required' });
+      }
+
+      const cardRes = await client.query('SELECT * FROM gccd_bingo_cards WHERE participant_id = $1', [participantId]);
+      if (cardRes.rows.length === 0) {
+        return sendJson(res, 404, { error: 'Card not found' });
+      }
+      const card = cardRes.rows[0];
+
+      await client.query(
+        `UPDATE gccd_bingo_tiles
+         SET image_url = NULL, crop_data = NULL, status = 'not_finished', uploaded_at = NULL
+         WHERE card_id = $1`,
+        [card.id]
+      );
+
+      const now = new Date().toISOString();
+      await client.query(
+        `UPDATE gccd_bingo_cards
+         SET total_completed = 0, status = 'draft', submitted_at = NULL, updated_at = NOW()
+         WHERE id = $1`,
+        [card.id]
+      );
+
+      card.total_completed = 0;
+      card.status = 'draft';
+      card.submitted_at = null;
+      card.updated_at = now;
+
+      const tilesRes = await client.query(
+        'SELECT * FROM gccd_bingo_tiles WHERE card_id = $1 ORDER BY tile_index ASC',
+        [card.id]
+      );
+      card.tiles = tilesRes.rows;
+
+      return sendJson(res, 200, {
+        success: true,
+        card,
+        message: 'Progress reset successfully'
       });
     }
 

@@ -42,8 +42,7 @@ export const SubmitModal: React.FC<SubmitModalProps> = ({
         </div>
 
         <p className="text-xs sm:text-sm text-google-grey text-center mb-6 leading-relaxed">
-          Once you submit, your bingo card will be <strong>finalized and locked</strong> in read-only mode for organizer review.
-          You won't be able to replace or remove photos after submission.
+          Submitting records your card for organizer evaluation and updates your submission timestamp to right now. You can always edit or resubmit anytime!
         </p>
 
         <div className="flex gap-3">

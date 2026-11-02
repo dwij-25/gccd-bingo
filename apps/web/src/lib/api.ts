@@ -246,6 +246,28 @@ export const api = {
     return tempDatabase.submitCard(activeUserId);
   },
 
+  async resetCard() {
+    const activeUserId = getActiveUserId();
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
+
+    try {
+      const res = await fetch(`${API_BASE}/card/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ participantId: activeUserId })
+      });
+      if (res.ok) return await res.json();
+      const errData = await res.json().catch(() => ({}));
+      throw new ApiError(errData.error || 'Reset failed', res.status);
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Server reset failed, resetting in temp database', e);
+    }
+
+    return tempDatabase.resetCard(activeUserId);
+  },
+
   async checkBingo(bingoId: string) {
     try {
       const res = await fetch(`${API_BASE}/bingo/${encodeURIComponent(bingoId.trim().toUpperCase())}`);

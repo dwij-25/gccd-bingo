@@ -198,32 +198,72 @@ export function useBingoCard(initialCard: BingoCard | null) {
     }
   }, [card, isSaving, uploadProgress, showSuccess, showError]);
 
-  // Submit Card
+  // Submit / Resubmit Card
   const submitCard = useCallback(async () => {
-    if (!card || card.status !== 'draft') return;
+    if (!card) return;
 
-    const completed = card.tiles.filter(t => t.image_url && t.image_url.trim().length > 0).length;
-    if (completed < 9) {
-      showError('Cannot Submit', `Only ${completed} of 9 challenges are completed. All 9 tiles must be green.`);
+    const challengeTiles = card.tiles.filter(t => t.tile_index !== 4 && !t.isCenter);
+    const completed = challengeTiles.filter(t => t.image_url && t.image_url.trim().length > 0).length;
+    if (completed < 8) {
+      showError('Cannot Submit', `Only ${completed} of 8 challenges are completed. All 8 challenge tiles must be green.`);
       return;
     }
 
     try {
       const res = await api.submitCard();
       if (res.success) {
+        const now = res.card?.submitted_at || new Date().toISOString();
         setCard(prev => prev ? {
           ...prev,
           status: 'submitted',
-          submitted_at: res.card.submitted_at || new Date().toISOString()
+          submitted_at: now,
+          updated_at: now
         } : null);
         setHasUnsavedChanges(false);
         setSaveError(null);
-        showSuccess('Bingo Submitted!', `Your card is finalized with ID: ${card.bingo_id}`);
+        showSuccess('Bingo Submitted!', `Submission timeline updated to: ${new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
       }
       return res;
     } catch (err: any) {
       const msg = err.message || 'Submit failed.';
       showError('Submission Error', msg);
+      throw err;
+    }
+  }, [card, showSuccess, showError]);
+
+  // Reset Progress
+  const resetProgress = useCallback(async () => {
+    if (!card) return;
+
+    try {
+      setSaveError(null);
+      const res = await api.resetCard();
+      if (res.success && res.card) {
+        setCard(res.card);
+      } else {
+        setCard(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            total_completed: 0,
+            status: 'draft',
+            submitted_at: null,
+            tiles: prev.tiles.map(t => ({
+              ...t,
+              image_url: null,
+              crop_data: null,
+              status: 'not_finished' as const,
+              uploaded_at: null
+            }))
+          };
+        });
+      }
+      setFlippedTileIndex(null);
+      setHasUnsavedChanges(false);
+      showSuccess('Progress Reset', 'All challenge photos have been cleared. You can start fresh.');
+    } catch (err: any) {
+      const msg = err.message || 'Failed to reset progress.';
+      showError('Reset Error', msg);
       throw err;
     }
   }, [card, showSuccess, showError]);
@@ -236,6 +276,7 @@ export function useBingoCard(initialCard: BingoCard | null) {
     uploadProgress,
     uploadCroppedPhoto,
     removePhoto,
+    resetProgress,
     saveDraft,
     submitCard,
     isSaving,

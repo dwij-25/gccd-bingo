@@ -58,6 +58,7 @@ function BingoApp() {
     uploadProgress,
     uploadCroppedPhoto,
     removePhoto,
+    resetProgress,
     saveDraft,
     submitCard,
     isSaving,
@@ -202,6 +203,7 @@ function BingoApp() {
             onInitiateCamera={handleInitiateCamera}
             onAdjustPhoto={handleAdjustPhoto}
             onRemovePhoto={removePhoto}
+            onResetProgress={resetProgress}
             onSaveDraft={saveDraft}
             onOpenSubmitModal={() => setIsSubmitModalOpen(true)}
             onOpenCheckModal={() => setIsCheckModalOpen(true)}

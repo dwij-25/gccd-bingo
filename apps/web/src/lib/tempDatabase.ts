@@ -206,9 +206,6 @@ class TempDatabase {
 
   public uploadTile(participantId: string, tileIndex: number, imageDataUrl: string, cropData?: any): { success: boolean; imageUrl: string; updatedAt: string; totalCompleted: number; canSubmit: boolean } {
     const card = this.getCard(participantId);
-    if (card.status !== 'draft') {
-      throw new Error('This card has already been submitted and is locked for editing.');
-    }
 
     const tile = card.tiles.find(t => t.tile_index === tileIndex);
     if (!tile) {
@@ -231,15 +228,12 @@ class TempDatabase {
       imageUrl: imageDataUrl,
       updatedAt: now,
       totalCompleted: card.total_completed,
-      canSubmit: card.total_completed >= 9
+      canSubmit: card.total_completed >= 8
     };
   }
 
   public removeTile(participantId: string, tileIndex: number): { success: boolean; totalCompleted: number; updatedAt: string } {
     const card = this.getCard(participantId);
-    if (card.status !== 'draft') {
-      throw new Error('This card has already been submitted and is locked for editing.');
-    }
 
     const tile = card.tiles.find(t => t.tile_index === tileIndex);
     if (tile) {
@@ -263,9 +257,6 @@ class TempDatabase {
 
   public saveDraft(participantId: string, _tiles: any[]): { success: boolean; savedAt: string; totalCompleted: number } {
     const card = this.getCard(participantId);
-    if (card.status !== 'draft') {
-      throw new Error('Cannot modify a submitted card.');
-    }
 
     const now = new Date().toISOString();
     card.updated_at = now;
@@ -279,11 +270,28 @@ class TempDatabase {
     };
   }
 
+  public resetCard(participantId: string): { success: boolean; card: BingoCard } {
+    const card = this.getCard(participantId);
+    card.tiles.forEach(t => {
+      t.image_url = null;
+      t.crop_data = null;
+      t.status = 'not_finished';
+      t.uploaded_at = null;
+    });
+    const now = new Date().toISOString();
+    card.total_completed = 0;
+    card.status = 'draft';
+    card.submitted_at = null;
+    card.updated_at = now;
+    this.saveToStorage();
+    return { success: true, card };
+  }
+
   public submitCard(participantId: string): { success: boolean; card: BingoCard; bingoId: string; winEvaluation: WinEvaluation } {
     const card = this.getCard(participantId);
     const completedCount = card.tiles.filter(t => t.status === 'completed' && t.image_url).length;
-    if (completedCount < 9) {
-      throw new Error(`Cannot submit: Only ${completedCount} of 9 challenges are completed. All 9 tiles must be green.`);
+    if (completedCount < 8) {
+      throw new Error(`Cannot submit: Only ${completedCount} of 8 challenges are completed. All 8 challenge tiles must be green.`);
     }
 
     const now = new Date().toISOString();

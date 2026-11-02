@@ -39,6 +39,28 @@ export const BingoTile: React.FC<BingoTileProps> = ({
 }) => {
   const isDone = Boolean(tile.image_url && tile.image_url.trim().length > 0);
   const colorClass = COLOR_CLASSES[index] || 'bg-tile-yellow';
+  const isCenter = index === 4 || Boolean(tile.isCenter);
+
+  // Center Box is the static GDG Cloud Ahmedabad Emblem: intact & non-flippable
+  if (isCenter) {
+    return (
+      <div
+        className="relative aspect-[324/290] select-none w-full"
+        aria-label="Google Developer Groups Cloud Ahmedabad Emblem"
+      >
+        <div className="w-full h-full rounded-2xl sm:rounded-3xl border-3 border-google-dark shadow-brutal bg-white overflow-hidden flex flex-col items-center justify-center p-2">
+          <svg viewBox="0 0 100 80" className="w-16 h-16 sm:w-20 sm:h-20 select-none">
+            {/* Left Bracket < */}
+            <rect x="23" y="14" width="13" height="34" rx="6.5" transform="rotate(45 29.5 31)" fill="#EA4335" stroke="#202124" strokeWidth="2.5" />
+            <rect x="23" y="34" width="13" height="34" rx="6.5" transform="rotate(-45 29.5 51)" fill="#4285F4" stroke="#202124" strokeWidth="2.5" />
+            {/* Right Bracket > */}
+            <rect x="64" y="14" width="13" height="34" rx="6.5" transform="rotate(-45 70.5 31)" fill="#34A853" stroke="#202124" strokeWidth="2.5" />
+            <rect x="64" y="34" width="13" height="34" rx="6.5" transform="rotate(45 70.5 51)" fill="#FBBC04" stroke="#202124" strokeWidth="2.5" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
@@ -73,25 +95,12 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl sm:rounded-3xl border-3 border-google-dark shadow-brutal ${colorClass} overflow-hidden`}
         >
           {!isDone ? (
-            /* Empty State: exactly like reference image (centered text or center emblem, no dots, no headers) */
-            index === 4 ? (
-              <div className="w-full h-full flex flex-col items-center justify-center p-2">
-                <svg viewBox="0 0 100 80" className="w-16 h-16 sm:w-20 sm:h-20 select-none">
-                  {/* Left Bracket < */}
-                  <rect x="23" y="14" width="13" height="34" rx="6.5" transform="rotate(45 29.5 31)" fill="#EA4335" stroke="#202124" strokeWidth="2.5" />
-                  <rect x="23" y="34" width="13" height="34" rx="6.5" transform="rotate(-45 29.5 51)" fill="#4285F4" stroke="#202124" strokeWidth="2.5" />
-                  {/* Right Bracket > */}
-                  <rect x="64" y="14" width="13" height="34" rx="6.5" transform="rotate(-45 70.5 31)" fill="#34A853" stroke="#202124" strokeWidth="2.5" />
-                  <rect x="64" y="34" width="13" height="34" rx="6.5" transform="rotate(45 70.5 51)" fill="#FBBC04" stroke="#202124" strokeWidth="2.5" />
-                </svg>
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 sm:px-4">
-                <span className="font-extrabold text-xs sm:text-sm md:text-base leading-tight text-google-dark select-none whitespace-pre-line">
-                  {tile.title}
-                </span>
-              </div>
-            )
+            /* Empty State: exactly like reference image (centered text, no dots, no headers) */
+            <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 sm:px-4">
+              <span className="font-extrabold text-xs sm:text-sm md:text-base leading-tight text-google-dark select-none whitespace-pre-line">
+                {tile.title}
+              </span>
+            </div>
           ) : (
             /* Uploaded State: Photo fills card + title goes UP beside green dot */
             <>

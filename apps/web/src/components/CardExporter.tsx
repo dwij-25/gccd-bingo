@@ -10,6 +10,80 @@ interface CardExporterProps {
   card: BingoCard;
 }
 
+export interface CaptionOption {
+  id: string;
+  label: string;
+  tagline: string;
+  theme: 'blue' | 'yellow' | 'green' | 'red' | 'rainbow' | 'none';
+  bgColor: string;
+  textColor: string;
+  borderColor: string;
+  emoji: string;
+}
+
+export const PREDEFINED_CAPTIONS: CaptionOption[] = [
+  {
+    id: 'google-cloud',
+    label: 'Cloud Explorer',
+    tagline: 'Connecting the Cloud • GCCD 2026',
+    theme: 'blue',
+    bgColor: '#E8F0FE',
+    textColor: '#1A73E8',
+    borderColor: '#4285F4',
+    emoji: '☁️'
+  },
+  {
+    id: 'bingo-champion',
+    label: 'Bingo Champion',
+    tagline: 'Bingo Champion • GDG Cloud Ahmedabad',
+    theme: 'yellow',
+    bgColor: '#FEF7E0',
+    textColor: '#B06000',
+    borderColor: '#FBBC04',
+    emoji: '🏆'
+  },
+  {
+    id: 'innovate-learn',
+    label: 'Innovator',
+    tagline: 'Innovate, Build & Learn • Google Cloud',
+    theme: 'green',
+    bgColor: '#E6F4EA',
+    textColor: '#137333',
+    borderColor: '#34A853',
+    emoji: '💡'
+  },
+  {
+    id: 'community-spirit',
+    label: 'Community Spirit',
+    tagline: 'Made with Community Spirit • DevFest',
+    theme: 'red',
+    bgColor: '#FCE8E6',
+    textColor: '#C5221F',
+    borderColor: '#EA4335',
+    emoji: '❤️'
+  },
+  {
+    id: 'mission-accomplished',
+    label: 'Mission Accomplished',
+    tagline: '8 Challenges Crushed • Mission Accomplished!',
+    theme: 'rainbow',
+    bgColor: '#F8F9FA',
+    textColor: '#202124',
+    borderColor: '#202124',
+    emoji: '🎉'
+  },
+  {
+    id: 'none',
+    label: 'No Caption',
+    tagline: '',
+    theme: 'none',
+    bgColor: '#FFFFFF',
+    textColor: '#5F6368',
+    borderColor: '#DADCE0',
+    emoji: '🚫'
+  }
+];
+
 function escapeXml(unsafe: string): string {
   return unsafe.replace(/[<>&'"]/g, (c) => {
     switch (c) {
@@ -21,6 +95,20 @@ function escapeXml(unsafe: string): string {
       default: return c;
     }
   });
+}
+
+// Renders text with letters cycling through the 4 iconic Google colors
+function renderGoogleColoredText(text: string): string {
+  const colors = ['#4285F4', '#EA4335', '#FBBC04', '#34A853'];
+  let colorIndex = 0;
+  return text.split('').map(char => {
+    if (char === ' ') {
+      return '<tspan> </tspan>';
+    }
+    const color = colors[colorIndex % colors.length];
+    colorIndex++;
+    return `<tspan fill="${color}">${escapeXml(char)}</tspan>`;
+  }).join('');
 }
 
 // Convert any image URL (local asset, relative path, or external) to a Data URI
@@ -55,6 +143,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [isIosSafari, setIsIosSafari] = useState(false);
+  const [selectedCaptionId, setSelectedCaptionId] = useState<string>('google-cloud');
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -161,6 +250,21 @@ export const CardExporter: React.FC<CardExporterProps> = ({
       }
     }).join('\n');
 
+    // Selected Caption rendering in empty space below the grid (y=1636..1688)
+    const chosenCaption = PREDEFINED_CAPTIONS.find(c => c.id === selectedCaptionId) || PREDEFINED_CAPTIONS[0];
+    const hasCaption = chosenCaption.theme !== 'none' && chosenCaption.tagline.trim().length > 0;
+
+    const captionSvg = hasCaption ? `
+      <!-- Layer 4.5: Caption Badge in Empty Space below grid (y=1636..1688) -->
+      <g>
+        <rect x="234" y="1640" width="772" height="50" rx="25" ry="25" fill="#202124" />
+        <rect x="230" y="1636" width="772" height="50" rx="25" ry="25" fill="${chosenCaption.bgColor}" stroke="#202124" stroke-width="3.5" />
+        <text x="616" y="1668" fill="${chosenCaption.textColor}" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="20" text-anchor="middle" letter-spacing="0.5">
+          ${chosenCaption.emoji}  ${escapeXml(chosenCaption.tagline)}
+        </text>
+      </g>
+    ` : '';
+
     const svgString = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
         <defs>
@@ -173,15 +277,20 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         <!-- Layer 2 & 3: 9 Slots (Strictly bounded and clipped) -->
         ${slotsSvg}
 
-        <!-- Layer 4: Top Header Participant Ribbon -->
+        <!-- Layer 4: Top Header Ribbon: Participant Name highlighted in 4 Google colors (No Email, No ID) -->
         <g>
-          <rect x="60" y="30" width="1121" height="68" rx="14" ry="14" fill="#FFFFFF" stroke="#202124" stroke-width="4" />
-          <text x="88" y="73" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="24">Participant: ${participant.name} (${participant.email})</text>
-          <text x="1150" y="73" fill="#1A73E8" font-family="monospace, monospace" font-weight="900" font-size="24" text-anchor="end">ID: ${card.bingo_id}</text>
+          <rect x="64" y="28" width="1121" height="74" rx="18" ry="18" fill="#202124" />
+          <rect x="60" y="24" width="1121" height="74" rx="18" ry="18" fill="#FFFFFF" stroke="#202124" stroke-width="4.5" />
+          <text x="620" y="73" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="38" letter-spacing="1">
+            ${renderGoogleColoredText(participant.name)}
+          </text>
         </g>
 
+        <!-- Layer 4.5: Caption / Tagline Badge -->
+        ${captionSvg}
+
         <!-- Layer 5: Footer Text -->
-        <text x="620" y="1710" fill="#5F6368" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="600" font-size="16" text-anchor="middle">Google Cloud Community Day 2026</text>
+        <text x="620" y="1714" fill="#5F6368" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="600" font-size="16" text-anchor="middle">Google Cloud Community Day 2026</text>
       </svg>
     `;
 
@@ -224,7 +333,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
       const { blob, dataUrl } = await generateCardPng();
       setPreviewUri(dataUrl);
 
-      const fileName = `GCCD_Bingo_${card.bingo_id}.png`;
+      const fileName = `GCCD_Bingo_${participant.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
       // 1. Mobile Web Share API
@@ -232,8 +341,8 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         try {
           await (navigator as any).share({
             files: [file],
-            title: `GCCD Bingo Card — ${card.bingo_id}`,
-            text: `Here is my completed Google Cloud Community Day Bingo Card (${card.bingo_id})!`
+            title: `GCCD Bingo Card — ${participant.name}`,
+            text: `Here is my completed Google Cloud Community Day Bingo Card!`
           });
           return;
         } catch (shareErr) {
@@ -247,7 +356,7 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         if (newWindow) {
           newWindow.document.write(`
             <html>
-              <head><title>GCCD Bingo — ${card.bingo_id}</title></head>
+              <head><title>GCCD Bingo — ${participant.name}</title></head>
               <body style="margin:0; background:#121212; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; color:white;">
                 <p style="padding:12px; background:#4285F4; border-radius:12px; font-weight:bold; font-size:14px; margin:16px;">
                   👉 Long-press the image below and select <strong>"Save to Photos"</strong>.
@@ -293,31 +402,72 @@ export const CardExporter: React.FC<CardExporterProps> = ({
             Download Official A4 Card
           </h3>
           <p className="text-xs text-google-grey mt-1">
-            Exports a high-resolution 300 DPI A4 image (2482 × 3508 px) with your photos and official Bingo ID embedded.
+            Exports a high-resolution 300 DPI A4 image (2482 × 3508 px) with your photos and custom Google tagline.
           </p>
         </div>
 
-        {/* Card Details Summary */}
-        <div className="bg-gray-50 border-2 border-google-dark rounded-2xl p-4 mb-6 space-y-2 text-xs">
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-            <span className="font-bold text-google-grey">Participant:</span>
-            <span className="font-black text-google-dark">{participant.name}</span>
+        {/* Participant Name Preview in 4 Google Colors */}
+        <div className="bg-white border-2 border-google-dark rounded-2xl p-3.5 mb-5 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-google-grey uppercase tracking-wider block mb-1">
+            Participant Spotlight
+          </span>
+          <div className="text-2xl sm:text-3xl font-black tracking-wide flex justify-center flex-wrap gap-x-1">
+            {participant.name.split(' ').map((word, wIdx) => (
+              <span key={wIdx} className="inline-flex">
+                {word.split('').map((char, cIdx) => {
+                  const colors = ['text-[#4285F4]', 'text-[#EA4335]', 'text-[#FBBC04]', 'text-[#34A853]'];
+                  const colorClass = colors[(wIdx * 5 + cIdx) % colors.length];
+                  return (
+                    <span key={cIdx} className={colorClass}>
+                      {char}
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
           </div>
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-            <span className="font-bold text-google-grey">Registered Email:</span>
-            <span className="font-mono text-google-dark">{participant.email}</span>
-          </div>
-          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-            <span className="font-bold text-google-grey">Official Bingo ID:</span>
-            <span className="font-mono font-black text-google-blue bg-blue-50 px-2 py-0.5 rounded border border-google-blue">
-              {card.bingo_id}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-bold text-google-grey">Card Status:</span>
-            <span className="font-extrabold uppercase text-google-green">
-              {card.status} ({card.total_completed}/9 Completed)
-            </span>
+          <p className="text-[10px] text-google-grey mt-1">
+            (Email address and Bingo ID are kept private and omitted from the saved image)
+          </p>
+        </div>
+
+        {/* Caption / Tagline Selector */}
+        <div className="mb-5">
+          <label className="block text-xs font-black text-google-dark mb-2 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-google-yellow fill-google-yellow" />
+            <span>Select a Tagline for the Card:</span>
+          </label>
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {PREDEFINED_CAPTIONS.map((cap) => {
+              const isSelected = selectedCaptionId === cap.id;
+              return (
+                <button
+                  key={cap.id}
+                  type="button"
+                  onClick={() => setSelectedCaptionId(cap.id)}
+                  className={`w-full text-left p-2.5 rounded-xl border-2 transition flex items-center justify-between gap-2 cursor-pointer ${
+                    isSelected
+                      ? 'border-google-dark bg-blue-50 shadow-xs'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base flex-shrink-0">{cap.emoji}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-google-dark truncate">
+                        {cap.tagline || '(No Tagline)'}
+                      </div>
+                      <div className="text-[10px] text-google-grey font-medium">
+                        {cap.label}
+                      </div>
+                    </div>
+                  </div>
+                  {isSelected && (
+                    <CheckCircle2 className="w-4 h-4 text-google-green flex-shrink-0" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
