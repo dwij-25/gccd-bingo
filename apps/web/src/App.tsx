@@ -153,10 +153,12 @@ function BingoApp() {
       {/* Confetti Celebration */}
       <ConfettiCanvas active={showConfetti} />
 
-      {/* Navigation */}
-      <Navbar
-        onOpenRulesModal={() => setIsRulesModalOpen(true)}
-      />
+      {/* Navigation (Only displayed when authenticated on the bingo board) */}
+      {isAuthenticated && activeCard && (
+        <Navbar
+          onOpenRulesModal={() => setIsRulesModalOpen(true)}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-3 sm:p-6">
@@ -237,21 +239,9 @@ function BingoApp() {
         onClose={handleCloseAdmin}
       />
 
-      {/* Footer */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey font-medium border-t border-gray-200 flex items-center justify-center gap-2">
-        <span>Google Cloud Developer Community Day 2026</span>
-        <a
-          href="?admin=true"
-          onClick={(e) => {
-            e.preventDefault();
-            setIsAdminModalOpen(true);
-            window.history.pushState({}, '', '?admin=true');
-          }}
-          className="text-gray-400 hover:text-google-blue hover:underline transition"
-          title="Direct link for event organizers"
-        >
-          [Organizer Portal]
-        </a>
+      {/* Footer (Clean, no organizer portal link on main page) */}
+      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey font-medium border-t border-gray-200 flex items-center justify-center">
+        <span>Google Developer Groups Cloud Ahmedabad • 2026</span>
       </footer>
     </div>
   );

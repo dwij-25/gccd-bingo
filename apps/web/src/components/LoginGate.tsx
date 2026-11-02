@@ -19,10 +19,37 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
 
   return (
     <div className="w-full max-w-md mx-auto bg-white border-2 border-google-dark rounded-2xl p-6 sm:p-7 shadow-brutal transition-all">
-      <div className="text-center mb-5">
-        <h1 className="text-2xl font-black text-google-dark tracking-tight">
-          GCCD Bingo
-        </h1>
+      {/* Visual Brand Header with Gold Brackets and BINGO Pill */}
+      <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 mb-6">
+        <img
+          src="/assets/left_bracket.png"
+          alt="{"
+          className="w-6 sm:w-8 h-auto select-none"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+
+        <div className="flex flex-col items-center text-center">
+          <span className="text-xs sm:text-sm font-bold text-google-dark tracking-tight">
+            Google Developer Groups
+          </span>
+          <h1 className="text-xl sm:text-2xl font-black text-google-dark tracking-tight leading-tight mb-1.5">
+            Cloud Ahmedabad
+          </h1>
+          <div className="px-6 py-0.5 bg-white border-2 border-google-dark rounded-full text-sm sm:text-base font-black tracking-widest shadow-brutal text-google-dark">
+            BINGO
+          </div>
+        </div>
+
+        <img
+          src="/assets/right_bracket.png"
+          alt="}"
+          className="w-6 sm:w-8 h-auto select-none"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
       </div>
 
       {error && (
