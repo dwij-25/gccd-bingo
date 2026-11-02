@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, Lock, CheckCircle2, Download, Trophy, LogOut, Clock } from 'lucide-react';
+import { Save, Lock, CheckCircle2, Download, Trophy, LogOut, Clock, FileCheck } from 'lucide-react';
 import { Participant, BingoCard } from '../types/bingo.js';
 import { BingoTile } from './BingoTile.js';
 
@@ -38,7 +38,8 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
 }) => {
   const isLocked = card.status !== 'draft';
   const completedCount = card.total_completed;
-  const canSubmit = completedCount >= 9 && !isLocked;
+  const allGreen = completedCount >= 9;
+  const canSubmit = allGreen && !isLocked;
   const progressPct = Math.round((completedCount / 9) * 100);
 
   return (
@@ -219,26 +220,42 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
       </div>
 
       {/* ========================================================
-           SECONDARY ACTION PILLS
+           SECONDARY ACTION CONTROLS
            ======================================================== */}
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+        {/* View Submission and Win Status: ONLY active when all 9 images are green or submitted */}
         <button
           type="button"
+          disabled={!allGreen && !isLocked}
           onClick={onOpenCheckModal}
-          className="px-4 py-2 bg-white dark:bg-gray-800 text-google-dark dark:text-white text-xs font-bold border-2 border-google-dark dark:border-white/20 rounded-full flex items-center gap-1.5 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          className={`px-4 py-2.5 text-xs font-bold border-2 rounded-full flex items-center gap-2 transition ${
+            allGreen || isLocked
+              ? 'bg-tile-yellow text-google-dark border-google-dark shadow-brutal hover:bg-yellow-300 cursor-pointer'
+              : 'bg-gray-100 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-60'
+          }`}
+          title={
+            allGreen || isLocked
+              ? 'View your submission details and win evaluation'
+              : 'Complete all 9 challenges (turn all dots green) to unlock submission and win status'
+          }
         >
-          <Trophy className="w-3.5 h-3.5 text-google-yellow" />
-          <span>Check My Bingo Status</span>
+          <Trophy className={`w-3.5 h-3.5 ${allGreen || isLocked ? 'text-google-dark' : 'text-gray-400'}`} />
+          <span>
+            {allGreen || isLocked ? 'View Submission & Win Status 🏆' : `View Submission & Win (Need ${9 - completedCount} more)`}
+          </span>
         </button>
 
-        <button
-          type="button"
-          onClick={onOpenExportModal}
-          className="px-4 py-2 bg-white dark:bg-gray-800 text-google-dark dark:text-white text-xs font-bold border-2 border-google-dark dark:border-white/20 rounded-full flex items-center gap-1.5 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-        >
-          <Download className="w-3.5 h-3.5 text-google-blue" />
-          <span>Download A4 Card (PNG)</span>
-        </button>
+        {/* Download A4 Card PNG: ONLY available AFTER submission */}
+        {isLocked && (
+          <button
+            type="button"
+            onClick={onOpenExportModal}
+            className="px-5 py-2.5 bg-google-blue text-white text-xs font-extrabold border-2 border-google-dark rounded-full flex items-center gap-2 shadow-brutal hover:bg-blue-600 active:shadow-none transition animate-fadeIn"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download A4 Card (PNG)</span>
+          </button>
+        )}
       </div>
     </div>
   );

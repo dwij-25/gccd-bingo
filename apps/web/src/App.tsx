@@ -6,6 +6,7 @@ import { LoginGate } from './components/LoginGate.js';
 import { BingoBoard } from './components/BingoBoard.js';
 import { SubmitModal } from './components/SubmitModal.js';
 import { CheckResultModal } from './components/CheckResultModal.js';
+import { RulesModal } from './components/RulesModal.js';
 import { AdminPanel } from './components/AdminPanel.js';
 import { CardExporter } from './components/CardExporter.js';
 import { ConfettiCanvas } from './components/ConfettiCanvas.js';
@@ -14,6 +15,7 @@ export function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -50,6 +52,46 @@ export function App() {
     }
   }, [darkMode]);
 
+  // Direct URL navigation for Organizer Portal: /admin or ?admin=true or #admin
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const path = window.location.pathname.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path === '/admin' || search.includes('admin=true') || hash === '#admin') {
+        setIsAdminModalOpen(true);
+      }
+    };
+    checkAdminRoute();
+    window.addEventListener('popstate', checkAdminRoute);
+    window.addEventListener('hashchange', checkAdminRoute);
+
+    // Keyboard shortcut for organizers: Alt+A or Ctrl+Shift+A
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.altKey && e.key.toLowerCase() === 'a') || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a')) {
+        e.preventDefault();
+        setIsAdminModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('popstate', checkAdminRoute);
+      window.removeEventListener('hashchange', checkAdminRoute);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleCloseAdmin = () => {
+    setIsAdminModalOpen(false);
+    const path = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    if (path === '/admin' || search.includes('admin=true') || hash === '#admin') {
+      window.history.pushState({}, '', '/');
+    }
+  };
+
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -77,8 +119,7 @@ export function App() {
       <Navbar
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        onOpenCheckModal={() => setIsCheckModalOpen(true)}
-        onOpenAdminModal={() => setIsAdminModalOpen(true)}
+        onOpenRulesModal={() => setIsRulesModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -130,20 +171,40 @@ export function App() {
         </>
       )}
 
+      {/* Rules & Regulations Modal */}
+      <RulesModal
+        isOpen={isRulesModalOpen}
+        onClose={() => setIsRulesModalOpen(false)}
+      />
+
+      {/* View Submission and Win Status Modal */}
       <CheckResultModal
         isOpen={isCheckModalOpen}
         onClose={() => setIsCheckModalOpen(false)}
         defaultBingoId={activeCard?.bingo_id || ''}
       />
 
+      {/* Protected Organizer Admin Panel (Accessible via direct URL /admin or ?admin=true) */}
       <AdminPanel
         isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
+        onClose={handleCloseAdmin}
       />
 
       {/* Footer */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey dark:text-gray-500 font-medium border-t border-gray-200 dark:border-gray-800">
-        Google Cloud Developer Community Day 2026 • Built for community, learning, and celebration.
+      <footer className="relative z-10 w-full py-4 text-center text-xs text-google-grey dark:text-gray-500 font-medium border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-2">
+        <span>Google Cloud Developer Community Day 2026 • Built for community, learning, and celebration.</span>
+        <a
+          href="?admin=true"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsAdminModalOpen(true);
+            window.history.pushState({}, '', '?admin=true');
+          }}
+          className="text-gray-400 dark:text-gray-600 hover:text-google-blue hover:underline transition"
+          title="Direct link for event organizers"
+        >
+          [Organizer Portal]
+        </a>
       </footer>
     </div>
   );

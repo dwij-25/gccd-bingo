@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
-import { User, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { User, Mail, ArrowRight, AlertCircle, Info } from 'lucide-react';
 
 interface LoginGateProps {
   onLogin: (name: string, email: string) => Promise<any>;
   isLoading: boolean;
   error: string | null;
 }
-
-const DEMO_PROFILES = [
-  { name: 'Dwij Patel', email: 'dwij@example.com', role: 'Speaker' },
-  { name: 'Sarah Jenkins', email: 'sarah.j@google.com', role: 'Keynote Speaker' },
-  { name: 'Aarav Sharma', email: 'aarav.sharma@techcorp.in', role: 'Attendee' },
-  { name: 'Priyanka Verma', email: 'priyanka.v@clouddev.org', role: 'Attendee' },
-];
 
 export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error }) => {
   const [name, setName] = useState('');
@@ -22,12 +15,6 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
     onLogin(name.trim(), email.trim());
-  };
-
-  const handleSelectDemo = (dName: string, dEmail: string) => {
-    setName(dName);
-    setEmail(dEmail);
-    onLogin(dName, dEmail);
   };
 
   return (
@@ -65,7 +52,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Dwij Patel"
+            placeholder="e.g. Dwij Pancholi"
             className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-google-dark dark:border-white/20 rounded-xl text-sm font-medium focus:outline-none focus:border-google-blue focus:bg-white dark:focus:bg-gray-900 transition"
           />
         </div>
@@ -92,7 +79,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
           {isLoading ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Verifying Attendee Roster...</span>
+              <span>Verifying Attendee Database...</span>
             </>
           ) : (
             <>
@@ -103,24 +90,9 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onLogin, isLoading, error 
         </button>
       </form>
 
-      {/* 1-Click Demo Profiles */}
-      <div className="mt-6 pt-5 border-t border-dashed border-gray-300 dark:border-gray-700">
-        <div className="text-xs font-bold uppercase tracking-wider text-google-grey dark:text-gray-400 mb-2.5 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-google-yellow" /> Quick Demo Attendees (Click to login):
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {DEMO_PROFILES.map((p) => (
-            <button
-              key={p.email}
-              type="button"
-              onClick={() => handleSelectDemo(p.name, p.email)}
-              className="px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-300 dark:border-gray-700 rounded-full transition flex items-center gap-1.5"
-            >
-              <span>{p.name}</span>
-              <span className="text-[10px] text-google-grey dark:text-gray-400">({p.role})</span>
-            </button>
-          ))}
-        </div>
+      <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-1.5 text-xs text-google-grey dark:text-gray-400">
+        <Info className="w-3.5 h-3.5 text-google-blue" />
+        <span>Your card auto-saves in real-time as you complete challenges.</span>
       </div>
     </div>
   );

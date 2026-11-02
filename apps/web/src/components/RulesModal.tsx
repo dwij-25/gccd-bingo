@@ -1,0 +1,110 @@
+import React from 'react';
+import { X, BookOpen, CheckCircle2, Award, Camera, ShieldAlert, Sparkles } from 'lucide-react';
+
+interface RulesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-xl bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-6 sm:p-7 shadow-brutal-lg relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5 text-google-dark dark:text-white" />
+        </button>
+
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-google-blue/10 border-2 border-google-blue mx-auto mb-3 flex items-center justify-center text-google-blue shadow-sm">
+            <BookOpen className="w-8 h-8" />
+          </div>
+          <h3 className="text-2xl font-black text-google-dark dark:text-white tracking-tight">
+            Rules & Regulations
+          </h3>
+          <p className="text-xs text-google-grey dark:text-gray-400 mt-1">
+            Google Cloud Developer Community Day (GCCD) Official Photo Bingo
+          </p>
+        </div>
+
+        <div className="space-y-4 text-xs sm:text-sm text-google-dark dark:text-gray-200">
+          {/* Section 1 */}
+          <div className="p-3.5 bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl">
+            <h4 className="font-extrabold text-sm mb-1.5 flex items-center gap-2 text-google-blue">
+              <Camera className="w-4 h-4" /> 1. Completing Challenges
+            </h4>
+            <p className="text-xs text-google-grey dark:text-gray-300 leading-relaxed">
+              Click or tap any of the 9 tiles to flip the card and read its challenge description. Upload a genuine photo (taken with your phone camera or uploaded from your photo album). Photos are compressed client-side for fast loading.
+            </p>
+          </div>
+
+          {/* Section 2 */}
+          <div className="p-3.5 bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl">
+            <h4 className="font-extrabold text-sm mb-1.5 flex items-center gap-2 text-google-green">
+              <CheckCircle2 className="w-4 h-4" /> 2. Signal Status Indicators
+            </h4>
+            <ul className="text-xs space-y-1.5 text-google-grey dark:text-gray-300">
+              <li className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-google-red border border-google-dark inline-block flex-shrink-0" />
+                <span><strong>Red Dot</strong> = Challenge not finished yet.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-google-green border border-google-dark inline-block flex-shrink-0" />
+                <span><strong>Green Dot</strong> = Challenge photo verified and completed.</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Section 3 */}
+          <div className="p-3.5 bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl">
+            <h4 className="font-extrabold text-sm mb-1.5 flex items-center gap-2 text-google-yellow">
+              <Award className="w-4 h-4" /> 3. Winning Line Combinations
+            </h4>
+            <p className="text-xs text-google-grey dark:text-gray-300 leading-relaxed mb-2">
+              Qualify for prize tiers by connecting 3 green tiles in a row:
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-google-dark dark:text-gray-200">
+              <div className="p-2 bg-white dark:bg-gray-900 border rounded-xl">
+                • 3 Horizontal Rows
+              </div>
+              <div className="p-2 bg-white dark:bg-gray-900 border rounded-xl">
+                • 3 Vertical Columns
+              </div>
+              <div className="p-2 bg-white dark:bg-gray-900 border rounded-xl">
+                • 2 Main Diagonals
+              </div>
+              <div className="p-2 bg-white dark:bg-gray-900 border rounded-xl text-google-green">
+                • Full Card: 9/9 Complete
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4 */}
+          <div className="p-3.5 bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl">
+            <h4 className="font-extrabold text-sm mb-1.5 flex items-center gap-2 text-google-red">
+              <ShieldAlert className="w-4 h-4" /> 4. Submitting & Verification
+            </h4>
+            <p className="text-xs text-google-grey dark:text-gray-300 leading-relaxed">
+              The <strong>SUBMIT</strong> button activates once all 9 boxes turn green. Submitting generates your official, tamper-proof <strong>Bingo ID</strong> and permanently locks the card. You can then download your customized high-resolution A4 Bingo card and visit the GCCD Swag Desk to claim your prizes!
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3 bg-google-blue text-white font-extrabold text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-blue-600 active:shadow-none transition"
+          >
+            Got It, Let's Play!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
