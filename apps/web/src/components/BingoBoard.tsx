@@ -8,7 +8,7 @@ interface BingoBoardProps {
   card: BingoCard;
   flippedIndex: number | null;
   onToggleFlip: (index: number) => void;
-  onInitiateCrop: (index: number, imageSrc: string, tileTitle: string) => void;
+  onInitiateCamera: (index: number, tileTitle: string) => void;
   onAdjustPhoto: (index: number) => void;
   onRemovePhoto: (index: number) => Promise<void>;
   onSaveDraft: () => Promise<any>;
@@ -27,7 +27,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   card,
   flippedIndex,
   onToggleFlip,
-  onInitiateCrop,
+  onInitiateCamera,
   onAdjustPhoto,
   onRemovePhoto,
   onSaveDraft,
@@ -176,7 +176,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
             index={idx}
             isFlipped={flippedIndex === idx}
             onToggleFlip={onToggleFlip}
-            onInitiateCrop={onInitiateCrop}
+            onInitiateCamera={onInitiateCamera}
             onAdjustPhoto={onAdjustPhoto}
             onRemovePhoto={onRemovePhoto}
             uploadProgress={uploadProgress[idx]}

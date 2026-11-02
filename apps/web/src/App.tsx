@@ -12,6 +12,7 @@ import { CardExporter } from './components/CardExporter.js';
 import { ConfettiCanvas } from './components/ConfettiCanvas.js';
 import { ToastProvider, useToast } from './components/Toast.js';
 import { CropAdjustModal, CropData } from './components/CropAdjustModal.js';
+import { CameraCaptureModal } from './components/CameraCaptureModal.js';
 
 function BingoApp() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -21,6 +22,17 @@ function BingoApp() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Camera Capture Modal State
+  const [cameraModalState, setCameraModalState] = useState<{
+    isOpen: boolean;
+    tileIndex: number;
+    tileTitle: string;
+  }>({
+    isOpen: false,
+    tileIndex: 0,
+    tileTitle: ''
+  });
 
   // Crop & Adjust Modal State (Issue 4)
   const [cropModalState, setCropModalState] = useState<{
@@ -93,12 +105,24 @@ function BingoApp() {
     }
   };
 
-  // Open crop modal when user selects a file
-  const handleInitiateCrop = (index: number, imageSrc: string, tileTitle: string) => {
-    setCropModalState({
+  // Open live camera capture interface
+  const handleInitiateCamera = (index: number, tileTitle: string) => {
+    setCameraModalState({
       isOpen: true,
       tileIndex: index,
-      imageSrc,
+      tileTitle
+    });
+  };
+
+  const handleCameraCaptured = (dataUrl: string) => {
+    const { tileIndex, tileTitle } = cameraModalState;
+    setCameraModalState(prev => ({ ...prev, isOpen: false }));
+
+    // Open crop & adjust modal with captured picture
+    setCropModalState({
+      isOpen: true,
+      tileIndex,
+      imageSrc: dataUrl,
       tileTitle,
       initialCropData: null
     });
@@ -175,7 +199,7 @@ function BingoApp() {
             card={activeCard}
             flippedIndex={flippedTileIndex}
             onToggleFlip={toggleFlip}
-            onInitiateCrop={handleInitiateCrop}
+            onInitiateCamera={handleInitiateCamera}
             onAdjustPhoto={handleAdjustPhoto}
             onRemovePhoto={removePhoto}
             onSaveDraft={saveDraft}
@@ -207,6 +231,13 @@ function BingoApp() {
             onClose={() => setIsExportModalOpen(false)}
             participant={participant!}
             card={activeCard}
+          />
+
+          <CameraCaptureModal
+            isOpen={cameraModalState.isOpen}
+            onClose={() => setCameraModalState(prev => ({ ...prev, isOpen: false }))}
+            tileTitle={cameraModalState.tileTitle}
+            onCapture={handleCameraCaptured}
           />
 
           <CropAdjustModal

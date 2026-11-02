@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Camera, RefreshCw, Trash2, Undo2, Sliders } from 'lucide-react';
 import { BingoTile as BingoTileType } from '../types/bingo.js';
 
@@ -7,7 +7,7 @@ interface BingoTileProps {
   index: number;
   isFlipped: boolean;
   onToggleFlip: (index: number) => void;
-  onInitiateCrop: (index: number, imageSrc: string, tileTitle: string) => void;
+  onInitiateCamera: (index: number, tileTitle: string) => void;
   onAdjustPhoto: (index: number) => void;
   onRemovePhoto: (index: number) => Promise<void>;
   uploadProgress?: number;
@@ -31,28 +31,14 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   index,
   isFlipped,
   onToggleFlip,
-  onInitiateCrop,
+  onInitiateCamera,
   onAdjustPhoto,
   onRemovePhoto,
   uploadProgress,
   isLocked
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isDone = Boolean(tile.image_url && tile.image_url.trim().length > 0);
   const colorClass = COLOR_CLASSES[index] || 'bg-tile-yellow';
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        onInitiateCrop(index, dataUrl, tile.title);
-      };
-      reader.readAsDataURL(file);
-      e.target.value = '';
-    }
-  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
@@ -75,15 +61,6 @@ export const BingoTile: React.FC<BingoTileProps> = ({
         }
       }}
     >
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/jpeg,image/png,image/webp,image/heic"
-        capture="environment"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
       <div
         className={`w-full h-full relative transition-transform duration-500 transform-style-3d ${
           isFlipped ? 'rotate-y-180' : ''
@@ -187,7 +164,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
             {isDone && tile.image_url ? (
               <div className="w-full flex flex-col items-center gap-1.5">
                 <div className="w-full h-12 rounded-lg overflow-hidden border border-google-dark bg-black">
-                  <img src={tile.image_url} alt="Uploaded challenge" className="w-full h-full object-cover" />
+                  <img src={tile.image_url} alt="Captured challenge" className="w-full h-full object-cover" />
                 </div>
                 {!isLocked && (
                   <div className="flex gap-1 w-full">
@@ -201,22 +178,22 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                       <Sliders className="w-2.5 h-2.5" />
                       <span>Adjust</span>
                     </button>
-                    {/* REPLACE BUTTON */}
+                    {/* RETAKE BUTTON */}
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => onInitiateCamera(index, tile.title)}
                       className="flex-1 py-1 text-[10px] font-bold bg-blue-50 text-google-blue border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-blue-100 transition cursor-pointer"
-                      title="Replace photo"
+                      title="Retake picture with camera"
                     >
                       <RefreshCw className="w-2.5 h-2.5" />
-                      <span>Replace</span>
+                      <span>Retake</span>
                     </button>
                     {/* REMOVE BUTTON */}
                     <button
                       type="button"
                       onClick={() => onRemovePhoto(index)}
                       className="flex-1 py-1 text-[10px] font-bold bg-red-50 text-google-red border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-red-100 transition cursor-pointer"
-                      title="Remove photo"
+                      title="Remove picture"
                     >
                       <Trash2 className="w-2.5 h-2.5" />
                       <span>Remove</span>
@@ -231,17 +208,17 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden border border-google-dark">
                       <div className="bg-google-blue h-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
                     </div>
-                    <span className="text-[9px] font-bold text-google-blue">{uploadProgress}% uploading...</span>
+                    <span className="text-[9px] font-bold text-google-blue">{uploadProgress}% saving...</span>
                   </div>
                 ) : (
                   <button
                     type="button"
                     disabled={isLocked}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-2 px-2 bg-google-blue text-white text-[11px] sm:text-xs font-bold border-2 border-google-dark rounded-xl flex items-center justify-center gap-1.5 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer"
+                    onClick={() => onInitiateCamera(index, tile.title)}
+                    className="w-full py-2.5 px-2 bg-google-blue text-white text-[11px] sm:text-xs font-extrabold border-2 border-google-dark rounded-xl flex items-center justify-center gap-1.5 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5" />
-                    <span>Upload Pic</span>
+                    <Camera className="w-4 h-4" />
+                    <span>Click Picture</span>
                   </button>
                 )}
               </div>
@@ -249,7 +226,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           <div className="text-[9px] text-google-grey font-medium truncate">
-            {isDone ? 'Photo uploaded' : 'Click to upload photo'}
+            {isDone ? 'Photo captured' : 'Take a photo at the event'}
           </div>
         </div>
       </div>

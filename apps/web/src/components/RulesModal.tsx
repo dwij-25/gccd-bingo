@@ -39,7 +39,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               <Camera className="w-4 h-4" /> 1. Completing Challenges
             </h4>
             <p className="text-xs text-google-grey leading-relaxed">
-              Click or tap any of the 9 tiles to flip the card and read its challenge description. Upload a genuine photo (taken with your phone camera or uploaded from your photo album). Photos are compressed client-side for fast loading.
+              Click or tap any of the 9 tiles to flip the card and read its challenge description. Click the picture in real time at the event using your camera and adjust it. Photos are compressed client-side for fast loading.
             </p>
           </div>
 
