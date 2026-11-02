@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Download, Award, RefreshCw, Key } from 'lucide-react';
+import { X, ShieldCheck, Download, Award, RefreshCw, Key, Trash2 } from 'lucide-react';
 import { api } from '../lib/api.js';
 
 interface AdminPanelProps {
@@ -53,6 +53,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleResetDatabase = async () => {
+    const confirmation = window.confirm(
+      '⚠️ ARE YOU SURE?\n\nThis will permanently delete all attendee registrations, bingo cards, and photo submissions from the database for a fresh clean slate.'
+    );
+    if (!confirmation) return;
+
+    setIsLoading(true);
+    try {
+      await api.adminResetDatabase(adminKey);
+      alert('All entries have been completely reset to 0.');
+      await loadData();
+    } catch (err: any) {
+      alert('Failed to reset database: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs animate-fadeIn">
       <div className="w-full max-w-4xl bg-white border-3 border-google-dark rounded-3xl p-5 sm:p-6 shadow-brutal-lg flex flex-col max-h-[90vh]">
@@ -82,8 +100,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           {isAuthenticated && (
             <div className="flex items-center gap-2">
               <a
-                href="/api/admin/export-csv"
-                download
+                href={`/api/admin/export-csv?adminKey=${encodeURIComponent(adminKey)}`}
+                download="gccd-bingo-submissions.csv"
                 className="px-3 py-1.5 text-xs font-bold bg-white border-2 border-google-dark rounded-xl flex items-center gap-1.5 hover:bg-gray-100 transition shadow-xs"
               >
                 <Download className="w-3.5 h-3.5 text-google-green" />
@@ -95,6 +113,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 title="Refresh Table"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={handleResetDatabase}
+                className="px-2.5 py-1.5 text-xs font-bold bg-red-50 text-google-red border-2 border-google-red rounded-xl flex items-center gap-1 hover:bg-red-100 transition cursor-pointer"
+                title="Wipe database entries"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reset Database</span>
               </button>
             </div>
           )}
@@ -111,7 +137,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               required
               value={adminKey}
               onChange={(e) => setAdminKey(e.target.value)}
-              placeholder="Organizer secret pass"
+              placeholder="Organizer secret key (e.g. gccd2026)"
               className="w-full px-4 py-2.5 bg-gray-50 border-2 border-google-dark rounded-xl text-center text-sm font-mono focus:outline-none focus:border-google-blue"
             />
             <button

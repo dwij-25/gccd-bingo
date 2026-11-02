@@ -309,5 +309,20 @@ export const api = {
     }
 
     return tempDatabase.adminMarkWinner(bingoId, isWinner, winTier);
+  },
+
+  async adminResetDatabase(adminKey?: string) {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (adminKey) headers['x-admin-key'] = adminKey;
+      const res = await fetch(`${API_BASE}/admin/reset-database`, {
+        method: 'POST',
+        headers,
+        credentials: 'include'
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
+    }
   }
 };

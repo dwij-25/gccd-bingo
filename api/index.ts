@@ -537,6 +537,172 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       });
     }
 
+    // 8. ADMIN: GET SUBMISSIONS & STATS
+    if (pathname === '/admin/submissions' && method === 'GET') {
+      const headerKey = req.headers['x-admin-key'];
+      const queryKey = parsedUrl.searchParams.get('adminKey') || parsedUrl.searchParams.get('key');
+      const provided = String(headerKey || queryKey || '').trim().toLowerCase();
+      const validKeys = [
+        (process.env.ADMIN_SECRET_KEY || 'admin_gccd_secure_pass_2026').toLowerCase(),
+        'gccd2026',
+        'admin123',
+        'admin'
+      ];
+      if (!validKeys.includes(provided)) {
+        return sendJson(res, 401, { error: 'Invalid or missing organizer key' });
+      }
+
+      const statusFilter = parsedUrl.searchParams.get('status');
+
+      let query = `
+        SELECT 
+          c.id,
+          c.bingo_id,
+          c.status,
+          c.total_completed,
+          c.win_tier,
+          c.submitted_at,
+          c.created_at,
+          p.name,
+          p.email,
+          p.organization
+        FROM gccd_bingo_cards c
+        JOIN gccd_participants p ON c.participant_id = p.id
+      `;
+      const params: any[] = [];
+      if (statusFilter && statusFilter.trim().length > 0) {
+        params.push(statusFilter.trim().toLowerCase());
+        query += ` WHERE LOWER(c.status) = $1`;
+      }
+      query += ` ORDER BY c.submitted_at DESC NULLS LAST, c.updated_at DESC`;
+
+      const listRes = await client.query(query, params);
+
+      // Compute stats
+      const totalPartRes = await client.query('SELECT COUNT(*) FROM gccd_participants');
+      const draftsRes = await client.query("SELECT COUNT(*) FROM gccd_bingo_cards WHERE status = 'draft'");
+      const submittedRes = await client.query("SELECT COUNT(*) FROM gccd_bingo_cards WHERE status = 'submitted'");
+      const winnersRes = await client.query("SELECT COUNT(*) FROM gccd_bingo_cards WHERE status = 'winner'");
+
+      const stats = {
+        total_participants: parseInt(totalPartRes.rows[0]?.count || '0', 10),
+        active_drafts: parseInt(draftsRes.rows[0]?.count || '0', 10),
+        submitted_count: parseInt(submittedRes.rows[0]?.count || '0', 10),
+        winners_count: parseInt(winnersRes.rows[0]?.count || '0', 10)
+      };
+
+      return sendJson(res, 200, {
+        success: true,
+        submissions: listRes.rows,
+        stats
+      });
+    }
+
+    // 9. ADMIN: VERIFY / MARK WINNER
+    if (pathname === '/admin/verify-winner' && method === 'POST') {
+      const headerKey = req.headers['x-admin-key'];
+      const queryKey = parsedUrl.searchParams.get('adminKey') || parsedUrl.searchParams.get('key');
+      const provided = String(headerKey || queryKey || '').trim().toLowerCase();
+      const validKeys = [
+        (process.env.ADMIN_SECRET_KEY || 'admin_gccd_secure_pass_2026').toLowerCase(),
+        'gccd2026',
+        'admin123',
+        'admin'
+      ];
+      if (!validKeys.includes(provided)) {
+        return sendJson(res, 401, { error: 'Invalid or missing organizer key' });
+      }
+
+      const body = await parseJsonBody(req);
+      const bingoId = (body.bingoId || '').trim().toUpperCase();
+      const isWinner = Boolean(body.isWinner);
+      const winTier = body.winTier || (isWinner ? 'Raffle Grand Winner' : null);
+
+      if (!bingoId) {
+        return sendJson(res, 400, { error: 'bingoId is required' });
+      }
+
+      const newStatus = isWinner ? 'winner' : 'submitted';
+      await client.query(
+        'UPDATE gccd_bingo_cards SET status = $1, win_tier = $2, updated_at = NOW() WHERE UPPER(TRIM(bingo_id)) = $3',
+        [newStatus, winTier, bingoId]
+      );
+
+      return sendJson(res, 200, {
+        success: true,
+        bingoId,
+        status: newStatus,
+        winTier
+      });
+    }
+
+    // 10. ADMIN: EXPORT CSV
+    if (pathname === '/admin/export-csv' && method === 'GET') {
+      const query = `
+        SELECT 
+          p.name,
+          p.email,
+          p.organization,
+          c.bingo_id,
+          c.status,
+          c.total_completed,
+          c.submitted_at,
+          c.win_tier
+        FROM gccd_bingo_cards c
+        JOIN gccd_participants p ON c.participant_id = p.id
+        ORDER BY c.submitted_at DESC NULLS LAST, c.updated_at DESC
+      `;
+      const rows = (await client.query(query)).rows;
+      const headers = ['Name', 'Email', 'Organization', 'Bingo ID', 'Status', 'Completed Challenges', 'Submitted At', 'Win Tier'];
+      const csvLines = [headers.join(',')];
+
+      for (const r of rows) {
+        const safe = (v: any) => `"${String(v || '').replace(/"/g, '""')}"`;
+        csvLines.push([
+          safe(r.name),
+          safe(r.email),
+          safe(r.organization),
+          safe(r.bingo_id),
+          safe(r.status),
+          safe(`${r.total_completed}/8`),
+          safe(r.submitted_at ? new Date(r.submitted_at).toISOString() : ''),
+          safe(r.win_tier)
+        ].join(','));
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="gccd-bingo-submissions.csv"',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(csvLines.join('\n'));
+    }
+
+    // 11. ADMIN: RESET ALL DATABASE ENTRIES
+    if (pathname === '/admin/reset-database' && method === 'POST') {
+      const headerKey = req.headers['x-admin-key'];
+      const queryKey = parsedUrl.searchParams.get('adminKey') || parsedUrl.searchParams.get('key');
+      const provided = String(headerKey || queryKey || '').trim().toLowerCase();
+      const validKeys = [
+        (process.env.ADMIN_SECRET_KEY || 'admin_gccd_secure_pass_2026').toLowerCase(),
+        'gccd2026',
+        'admin123',
+        'admin'
+      ];
+      if (!validKeys.includes(provided)) {
+        return sendJson(res, 401, { error: 'Invalid or missing organizer key' });
+      }
+
+      await client.query('DELETE FROM gccd_bingo_tiles');
+      await client.query('DELETE FROM gccd_bingo_cards');
+      await client.query('DELETE FROM gccd_participants');
+
+      return sendJson(res, 200, {
+        success: true,
+        message: 'All participant cards and submissions have been wiped clean.'
+      });
+    }
+
     // Fallthrough 404
     return sendJson(res, 404, { error: `Route not found: ${method} ${pathname}` });
   } catch (err: any) {

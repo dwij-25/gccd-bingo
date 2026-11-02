@@ -187,11 +187,11 @@ export const CardExporter: React.FC<CardExporterProps> = ({
         return `
           <!-- Slot ${s.index} Completed Photo -->
           <g clip-path="url(#slot-clip-${s.index})">
-            <image href="${photoUri}" x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" preserveAspectRatio="xMidYMid slice" />
+            <image href="${photoUri}" x="${s.x}" y="${s.y + 44}" width="${s.width}" height="${s.height - 44}" preserveAspectRatio="xMidYMid slice" />
             
-            <!-- Top Header Bar: Activity name beside green dot -->
-            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="44" fill="#FFFFFF" fill-opacity="0.94" />
-            <line x1="${s.x}" y1="${s.y + 44}" x2="${s.x + s.width}" y2="${s.y + 44}" stroke="#202124" stroke-width="2" />
+            <!-- Top Header Bar: Solid part of the box covering the whole top region -->
+            <rect x="${s.x}" y="${s.y}" width="${s.width}" height="44" fill="#FFFFFF" />
+            <line x1="${s.x}" y1="${s.y + 44}" x2="${s.x + s.width}" y2="${s.y + 44}" stroke="#202124" stroke-width="3" />
             <text x="${s.x + 14}" y="${s.y + 28}" fill="#202124" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="15">${escapeXml(displayTitle)}</text>
             <circle cx="${s.x + s.width - 22}" cy="${s.y + 22}" r="9" fill="#34A853" stroke="#202124" stroke-width="2.5" />
           </g>
