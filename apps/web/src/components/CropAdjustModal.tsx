@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import Cropper, { Point, Area } from 'react-easy-crop';
-import { X, RotateCw, ZoomIn, ZoomOut, Check, RefreshCw, Maximize2, Minimize2 } from 'lucide-react';
-import { TILE_ASPECT, TILE_SLOT_WIDTH, TILE_SLOT_HEIGHT } from '../lib/templateConfig.js';
+import Cropper from 'react-easy-crop';
+import type { Point, Area } from 'react-easy-crop';
+import { RotateCw, Check, X, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
 
 export interface CropData {
   crop: Point;
@@ -20,12 +20,11 @@ interface CropAdjustModalProps {
   onConfirmCrop: (croppedDataUrl: string, cropData: CropData) => Promise<void>;
 }
 
-// Helper to create the cropped image from pixel coordinates
+// Generate cropped data URL using HTML5 canvas
 async function getCroppedImg(
   imageSrc: string,
   pixelCrop: Area,
-  rotation = 0,
-  mode: 'fill' | 'fit' = 'fill'
+  rotation = 0
 ): Promise<string> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
@@ -36,74 +35,44 @@ async function getCroppedImg(
   });
 
   const canvas = document.createElement('canvas');
-  const targetWidth = 972;  // 3x resolution of 324x290 slot
-  const targetHeight = 870;
+  const targetWidth = 324;
+  const targetHeight = 290;
   canvas.width = targetWidth;
   canvas.height = targetHeight;
+
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not get canvas context');
+  if (!ctx) throw new Error('Canvas context error');
 
-  // Fill background if letterboxing in "fit" mode
-  ctx.fillStyle = '#1E1E1E';
-  ctx.fillRect(0, 0, targetWidth, targetHeight);
-
-  // High quality interpolation
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  if (mode === 'fit') {
-    // Draw contained with letterbox
-    const hRatio = targetWidth / image.width;
-    const vRatio = targetHeight / image.height;
-    const ratio = Math.min(hRatio, vRatio);
-    const centerShiftX = (targetWidth - image.width * ratio) / 2;
-    const centerShiftY = (targetHeight - image.height * ratio) / 2;
+  // Draw rotated & cropped region
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = image.width;
+  tempCanvas.height = image.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) throw new Error('Temp context error');
 
-    ctx.save();
-    ctx.translate(targetWidth / 2, targetHeight / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-targetWidth / 2, -targetHeight / 2);
-    ctx.drawImage(
-      image,
-      0,
-      0,
-      image.width,
-      image.height,
-      centerShiftX,
-      centerShiftY,
-      image.width * ratio,
-      image.height * ratio
-    );
-    ctx.restore();
-  } else {
-    // Draw cropped area
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = image.width;
-    tempCanvas.height = image.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) throw new Error('Temp context error');
+  tempCtx.save();
+  tempCtx.translate(image.width / 2, image.height / 2);
+  tempCtx.rotate((rotation * Math.PI) / 180);
+  tempCtx.translate(-image.width / 2, -image.height / 2);
+  tempCtx.drawImage(image, 0, 0);
+  tempCtx.restore();
 
-    tempCtx.save();
-    tempCtx.translate(image.width / 2, image.height / 2);
-    tempCtx.rotate((rotation * Math.PI) / 180);
-    tempCtx.translate(-image.width / 2, -image.height / 2);
-    tempCtx.drawImage(image, 0, 0);
-    tempCtx.restore();
+  ctx.drawImage(
+    tempCanvas,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    targetWidth,
+    targetHeight
+  );
 
-    ctx.drawImage(
-      tempCanvas,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      targetWidth,
-      targetHeight
-    );
-  }
-
-  return canvas.toDataURL('image/jpeg', 0.85);
+  return canvas.toDataURL('image/jpeg', 0.88);
 }
 
 export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
@@ -117,7 +86,6 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
   const [crop, setCrop] = useState<Point>(initialCropData?.crop || { x: 0, y: 0 });
   const [zoom, setZoom] = useState(initialCropData?.zoom || 1);
   const [rotation, setRotation] = useState(initialCropData?.rotation || 0);
-  const [mode, setMode] = useState<'fill' | 'fit'>(initialCropData?.mode || 'fill');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -135,25 +103,22 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setRotation(0);
-    setMode('fill');
   };
 
   const handleConfirm = async () => {
-    if (!croppedAreaPixels && mode === 'fill') return;
     setIsProcessing(true);
     try {
       const croppedDataUrl = await getCroppedImg(
         imageSrc,
         croppedAreaPixels || { x: 0, y: 0, width: 324, height: 290 },
-        rotation,
-        mode
+        rotation
       );
 
       const cropParams: CropData = {
         crop,
         zoom,
         rotation,
-        mode,
+        mode: 'fill',
         croppedAreaPixels: croppedAreaPixels || undefined
       };
 
@@ -173,7 +138,7 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
         <div className="flex items-center justify-between border-b border-gray-200 pb-2.5 sm:pb-3 mb-2 flex-shrink-0">
           <div>
             <h3 className="font-extrabold text-sm sm:text-base text-google-dark">
-              Crop & Position Photo
+              Adjust & Position Photo
             </h3>
             <p className="text-xs text-google-grey truncate max-w-[260px] sm:max-w-xs">
               {tileTitle}
@@ -188,34 +153,52 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
           </button>
         </div>
 
-        {/* Cropper Frame with Rounded Mask Preview - Guaranteed Fixed Height */}
+        {/* Stable, Fixed Crop Viewport - The container NEVER resizes on zoom */}
         <div
-          style={{ height: '360px', minHeight: '300px', width: '100%', position: 'relative' }}
-          className="w-full bg-gray-900 rounded-2xl overflow-hidden border-2 border-google-dark shadow-inner my-2 flex-shrink-0"
+          style={{
+            height: '340px',
+            minHeight: '300px',
+            width: '100%',
+            position: 'relative',
+            touchAction: 'none'
+          }}
+          className="w-full bg-gray-900 rounded-2xl overflow-hidden border-2 border-google-dark shadow-inner my-2 flex-shrink-0 select-none"
         >
           <Cropper
             image={imageSrc}
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={TILE_ASPECT}
+            aspect={324 / 290}
+            cropSize={{ width: 260, height: 233 }}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
             onCropComplete={onCropComplete}
             showGrid={true}
-            cropShape="rect"
+            zoomSpeed={0.6}
+            minZoom={1}
+            maxZoom={3}
             classes={{
-              cropAreaClassName: '!rounded-[22px] !border-3 !border-google-blue !shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]'
+              cropAreaClassName: '!rounded-2xl !border-3 !border-white !shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none'
             }}
           />
         </div>
 
-        {/* Controls Bar */}
-        <div className="space-y-3 mt-2 sm:mt-4 flex-shrink-0">
-          {/* Zoom Slider */}
-          <div className="flex items-center gap-3">
-            <ZoomOut className="w-4 h-4 text-google-grey" />
+        {/* Intuitive Controls Bar */}
+        <div className="space-y-3 mt-2 sm:mt-3 flex-shrink-0">
+          {/* Zoom Controls with Clear +/- Buttons */}
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2">
+            <button
+              type="button"
+              onClick={() => setZoom(z => Math.max(1, +(z - 0.25).toFixed(2)))}
+              className="w-8 h-8 rounded-lg bg-white border border-gray-300 font-black text-sm flex items-center justify-center hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+              title="Zoom Out"
+              aria-label="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4 text-google-grey" />
+            </button>
+
             <input
               type="range"
               min={1}
@@ -226,17 +209,29 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
               className="flex-1 accent-google-blue cursor-pointer h-2 bg-gray-200 rounded-lg"
               aria-label="Zoom slider"
             />
-            <ZoomIn className="w-4 h-4 text-google-grey" />
-            <span className="text-xs font-mono font-bold w-10 text-right text-google-dark">{zoom.toFixed(1)}x</span>
+
+            <button
+              type="button"
+              onClick={() => setZoom(z => Math.min(3, +(z + 0.25).toFixed(2)))}
+              className="w-8 h-8 rounded-lg bg-white border border-gray-300 font-black text-sm flex items-center justify-center hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+              title="Zoom In"
+              aria-label="Zoom In"
+            >
+              <ZoomIn className="w-4 h-4 text-google-grey" />
+            </button>
+
+            <span className="text-xs font-mono font-bold w-10 text-right text-google-dark">
+              {zoom.toFixed(1)}x
+            </span>
           </div>
 
-          {/* Action Buttons: Rotate, Fit/Fill, Reset */}
+          {/* Action Buttons: Rotate, Reset, Cancel, Save */}
           <div className="flex items-center justify-between gap-2 pt-1">
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleRotate}
-                className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 transition cursor-pointer"
+                className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl text-xs font-extrabold flex items-center gap-1.5 hover:bg-gray-200 active:scale-95 transition cursor-pointer"
                 title="Rotate 90 degrees"
               >
                 <RotateCw className="w-3.5 h-3.5 text-google-blue" />
@@ -245,28 +240,10 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
 
               <button
                 type="button"
-                onClick={() => setMode(m => (m === 'fill' ? 'fit' : 'fill'))}
-                className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-gray-200 transition cursor-pointer"
-                title={mode === 'fill' ? "Switch to Fit (Letterbox)" : "Switch to Fill (Cover)"}
-              >
-                {mode === 'fill' ? (
-                  <>
-                    <Minimize2 className="w-3.5 h-3.5 text-google-yellow" />
-                    <span>Fit</span>
-                  </>
-                ) : (
-                  <>
-                    <Maximize2 className="w-3.5 h-3.5 text-google-green" />
-                    <span>Fill</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
                 onClick={handleReset}
-                className="p-1.5 text-google-grey hover:text-google-dark transition cursor-pointer"
-                title="Reset crop settings"
+                className="p-2 text-google-grey hover:text-google-dark bg-gray-100 rounded-xl border border-gray-200 transition cursor-pointer"
+                title="Reset position and zoom"
+                aria-label="Reset"
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
@@ -277,15 +254,16 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isProcessing}
-                className="px-4 py-2 text-xs font-bold text-google-grey hover:text-google-dark transition cursor-pointer"
+                className="px-3.5 py-2 text-xs font-bold text-google-grey hover:text-google-dark transition cursor-pointer"
               >
                 Cancel
               </button>
+
               <button
                 type="button"
                 onClick={handleConfirm}
                 disabled={isProcessing}
-                className="px-5 py-2 bg-google-green text-white font-extrabold text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 bg-google-green text-white font-black text-xs sm:text-sm border-2 border-google-dark rounded-xl shadow-brutal hover:bg-green-600 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
               >
                 {isProcessing ? (
                   <>
@@ -295,12 +273,16 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
                 ) : (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Apply & Save</span>
+                    <span>Save Photo</span>
                   </>
                 )}
               </button>
             </div>
           </div>
+
+          <p className="text-[10px] text-google-grey text-center font-medium">
+            Drag photo to reposition • Use +/- or slider to zoom
+          </p>
         </div>
       </div>
     </div>

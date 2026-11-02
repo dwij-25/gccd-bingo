@@ -61,54 +61,62 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
     <div className="w-full sm:max-w-2xl mx-auto bg-white border-0 sm:border-3 border-google-dark rounded-none sm:rounded-3xl p-3 sm:p-7 shadow-none sm:shadow-brutal-lg transition-all animate-fadeIn flex flex-col justify-between min-h-[calc(100dvh-3.5rem)] sm:min-h-0">
 
       {/* ========================================================
-           MINIMAL PARTICIPANT BAR (With Synced Time beside ID)
+           MINIMAL PARTICIPANT BAR (Clean single/double row layout)
            ======================================================== */}
-      <div className="bg-gray-50 border-2 border-google-dark rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 mb-3 sm:mb-5 shadow-xs flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-          <span className="font-extrabold text-google-dark">
-            {participant.name} <span className="font-normal text-google-grey text-xs">({participant.email})</span>
-          </span>
+      <div className="bg-gray-50 border-2 border-google-dark rounded-xl sm:rounded-2xl p-2.5 sm:px-3.5 sm:py-2.5 mb-2.5 sm:mb-4 shadow-xs">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Participant Name & Email + ID */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-extrabold text-xs sm:text-sm text-google-dark truncate">
+                {participant.name}
+              </span>
+              <span className="text-[10px] sm:text-xs text-google-grey truncate hidden xs:inline">
+                ({participant.email})
+              </span>
+            </div>
 
-          {/* Bingo ID in monospace blue style with Copy Button */}
-          <div className="flex items-center gap-1.5 bg-blue-50/80 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-google-blue/30">
-            <span className="text-[11px] font-bold text-google-grey">ID:</span>
-            <span className="font-mono font-black text-xs sm:text-sm text-google-blue tracking-wider select-all">
-              {card.bingo_id}
-            </span>
-            <button
-              type="button"
-              onClick={copyBingoId}
-              className="p-0.5 sm:p-1 hover:bg-blue-100 rounded text-google-blue transition cursor-pointer"
-              title="Copy Bingo ID"
-              aria-label="Copy Bingo ID to clipboard"
-            >
-              {copiedId ? (
-                <CheckCheck className="w-3.5 h-3.5 text-google-green" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1 bg-blue-50/80 px-2 py-0.5 rounded border border-google-blue/30">
+                <span className="text-[10px] font-bold text-google-grey">ID:</span>
+                <span className="font-mono font-black text-xs text-google-blue tracking-wider select-all">
+                  {card.bingo_id}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyBingoId}
+                  className="p-0.5 hover:bg-blue-100 rounded text-google-blue transition cursor-pointer"
+                  title="Copy Bingo ID"
+                  aria-label="Copy Bingo ID"
+                >
+                  {copiedId ? (
+                    <CheckCheck className="w-3 h-3 text-google-green" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                </button>
+              </div>
+
+              {lastSavedTime && (
+                <div className="flex items-center gap-1 text-[10px] font-bold text-google-grey bg-white px-1.5 py-0.5 rounded border border-gray-200">
+                  <Clock className="w-2.5 h-2.5 text-google-blue flex-shrink-0" />
+                  <span>{lastSavedTime}</span>
+                </div>
               )}
-            </button>
+            </div>
           </div>
 
-          {/* Last synced time placed directly within this box beside the ID */}
-          {lastSavedTime && (
-            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-google-grey bg-white px-2 py-0.5 rounded-md border border-gray-200 shadow-2xs">
-              <Clock className="w-3 h-3 text-google-blue flex-shrink-0" />
-              <span>Synced {lastSavedTime}</span>
-            </div>
-          )}
+          {/* Right: Logout Button */}
+          <button
+            type="button"
+            onClick={onLogout}
+            className="p-1.5 text-google-grey hover:text-google-red hover:bg-red-50 rounded-lg transition cursor-pointer flex-shrink-0"
+            title="Log out"
+            aria-label="Log out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
-
-        {/* Logout Button */}
-        <button
-          type="button"
-          onClick={onLogout}
-          className="p-1.5 text-google-grey hover:text-google-red hover:bg-red-50 rounded-lg transition cursor-pointer flex-shrink-0"
-          title="Log out"
-          aria-label="Log out"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
       </div>
 
       {/* ========================================================
