@@ -156,8 +156,8 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           {/* Description & Action Controls */}
-          <div className="flex-1 flex flex-col justify-center items-center text-center my-1 overflow-hidden">
-            <p className="text-[10px] sm:text-[11px] font-semibold leading-tight text-google-dark mb-2 px-1 line-clamp-2">
+          <div className="flex-1 flex flex-col justify-center items-center text-center my-1 px-1">
+            <p className="text-[11px] sm:text-xs font-bold text-google-dark leading-snug mb-2">
               {tile.description}
             </p>
 

@@ -55,15 +55,15 @@ function generateBingoId(): string {
 }
 
 const DEFAULT_TILES = [
-  { title: 'Selfie with a speaker', description: 'Find a session speaker, thank them for their talk, and take a photo together.', icon: 'selfie', color: 'tile-yellow' },
-  { title: 'The full auditorium', description: 'Capture a photo of the main hall or auditorium filled with attendees.', icon: 'auditorium', color: 'tile-pink' },
-  { title: 'A slide that taught you something', description: 'Take a picture of a slide from a keynote or session that taught you something new.', icon: 'slide', color: 'tile-blue' },
-  { title: 'Selfie with a volunteer', description: 'Say hi to an event volunteer or organizer and snap a selfie.', icon: 'volunteer', color: 'tile-blue' },
-  { title: 'GDG Cloud Ahmedabad', description: 'Take a photo at the official Google Developer Groups Cloud Ahmedabad stage or backdrop.', icon: 'logo', color: 'tile-white', isCenter: true },
-  { title: 'Selfie with someone new', description: 'Network with a fellow community member you have not met before and take a selfie.', icon: 'network', color: 'tile-green' },
-  { title: 'Photo booth or standee', description: 'Strike a pose and take a picture at the official event photo booth or event standee.', icon: 'booth', color: 'tile-green' },
-  { title: 'A sponsor booth', description: 'Visit our partner exhibition booths and take a picture at a sponsor booth.', icon: 'sponsor', color: 'tile-yellow' },
-  { title: 'Selfie with your badge', description: 'Proudly show off your official event attendee badge with a selfie.', icon: 'badge', color: 'tile-pink' }
+  { title: 'Selfie with a speaker', description: 'Selfie with any speaker.', icon: 'selfie', color: 'tile-yellow' },
+  { title: 'The full auditorium', description: 'Photo of the audience hall.', icon: 'auditorium', color: 'tile-pink' },
+  { title: 'A slide that taught you something', description: 'Photo of an insightful slide.', icon: 'slide', color: 'tile-blue' },
+  { title: 'Selfie with a volunteer', description: 'Selfie with an event volunteer.', icon: 'volunteer', color: 'tile-blue' },
+  { title: 'GDG Cloud Ahmedabad', description: 'Photo at the main stage.', icon: 'logo', color: 'tile-white', isCenter: true },
+  { title: 'Selfie with someone new', description: 'Selfie with a fellow attendee.', icon: 'network', color: 'tile-green' },
+  { title: 'Photo booth or standee', description: 'Photo at the event booth.', icon: 'booth', color: 'tile-green' },
+  { title: 'A sponsor booth', description: 'Photo at any sponsor booth.', icon: 'sponsor', color: 'tile-yellow' },
+  { title: 'Selfie with your badge', description: 'Selfie showing your event badge.', icon: 'badge', color: 'tile-pink' }
 ];
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
