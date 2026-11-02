@@ -1,5 +1,5 @@
-import React from 'react';
-import { Save, Lock, CheckCircle2, Download, Trophy, LogOut, Clock, FileCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Save, Lock, CheckCircle2, Download, Trophy, LogOut, Clock, Copy, CheckCheck, AlertCircle, RefreshCw } from 'lucide-react';
 import { Participant, BingoCard } from '../types/bingo.js';
 import { BingoTile } from './BingoTile.js';
 
@@ -8,7 +8,8 @@ interface BingoBoardProps {
   card: BingoCard;
   flippedIndex: number | null;
   onToggleFlip: (index: number) => void;
-  onUploadPhoto: (index: number, file: File) => Promise<void>;
+  onInitiateCrop: (index: number, imageSrc: string, tileTitle: string) => void;
+  onAdjustPhoto: (index: number) => void;
   onRemovePhoto: (index: number) => Promise<void>;
   onSaveDraft: () => Promise<any>;
   onOpenSubmitModal: () => void;
@@ -16,6 +17,7 @@ interface BingoBoardProps {
   onOpenExportModal: () => void;
   onLogout: () => void;
   isSaving: boolean;
+  saveError: string | null;
   lastSavedTime: string | null;
   uploadProgress: { [key: number]: number };
 }
@@ -25,7 +27,8 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   card,
   flippedIndex,
   onToggleFlip,
-  onUploadPhoto,
+  onInitiateCrop,
+  onAdjustPhoto,
   onRemovePhoto,
   onSaveDraft,
   onOpenSubmitModal,
@@ -33,51 +36,102 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   onOpenExportModal,
   onLogout,
   isSaving,
+  saveError,
   lastSavedTime,
   uploadProgress
 }) => {
+  const [copiedId, setCopiedId] = useState(false);
   const isLocked = card.status !== 'draft';
-  const completedCount = card.total_completed;
+  const completedCount = card.tiles.filter(t => t.image_url && t.image_url.trim().length > 0).length;
   const allGreen = completedCount >= 9;
   const canSubmit = allGreen && !isLocked;
   const progressPct = Math.round((completedCount / 9) * 100);
 
+  const copyBingoId = () => {
+    if (card.bingo_id) {
+      navigator.clipboard.writeText(card.bingo_id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-5 sm:p-7 shadow-brutal-lg transition-all animate-fadeIn">
+    <div className="w-full max-w-2xl mx-auto bg-white dark:bg-[#1E1E1E] border-3 border-google-dark dark:border-white/30 rounded-3xl p-4 sm:p-7 shadow-brutal-lg transition-all animate-fadeIn">
 
       {/* ========================================================
-           PARTICIPANT PROFILE RIBBON
+           PARTICIPANT PROFILE RIBBON (Issue 2 Fix)
            ======================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl p-3 sm:p-3.5 mb-5 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-google-blue text-white font-black text-base flex items-center justify-center border-2 border-google-dark shadow-xs">
-            {participant.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h2 className="font-extrabold text-sm sm:text-base text-google-dark dark:text-white leading-tight">
-              {participant.name}
-            </h2>
-            <p className="text-xs text-google-grey dark:text-gray-400">
-              {participant.email} {participant.organization && `• ${participant.organization}`}
-            </p>
-          </div>
-        </div>
+      <div className="bg-gray-50 dark:bg-gray-800/60 border-2 border-google-dark dark:border-white/20 rounded-2xl p-3 sm:p-4 mb-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-google-blue text-white font-black text-base flex items-center justify-center border-2 border-google-dark shadow-xs flex-shrink-0">
+              {participant.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-extrabold text-xs sm:text-sm text-google-dark dark:text-white leading-tight">
+                  Participant: <span className="font-bold">{participant.name}</span> ({participant.email})
+                </h2>
 
-        <div className="flex items-center gap-2.5">
-          <div className="text-right">
-            <span className="inline-block px-2.5 py-1 bg-tile-yellow border-2 border-google-dark rounded-lg text-xs font-black font-mono tracking-wider shadow-xs">
-              {card.bingo_id}
-            </span>
-            <div className="text-[10px] text-google-grey dark:text-gray-400 flex items-center justify-end gap-1 mt-0.5">
-              <Clock className="w-3 h-3" />
-              <span>{lastSavedTime ? `Saved at ${lastSavedTime}` : 'All changes saved'}</span>
+                {/* Bingo ID in monospace blue style with Copy Button */}
+                <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/40 border-2 border-google-blue px-2.5 py-0.5 rounded-lg text-xs font-mono font-black text-google-blue shadow-xs">
+                  <span>ID: {card.bingo_id}</span>
+                  <button
+                    type="button"
+                    onClick={copyBingoId}
+                    className="p-0.5 hover:text-blue-700 dark:hover:text-blue-300 transition"
+                    title="Copy Bingo ID to clipboard"
+                    aria-label="Copy Bingo ID"
+                  >
+                    {copiedId ? (
+                      <CheckCheck className="w-3.5 h-3.5 text-google-green" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submission Status shown SEPARATELY from the Bingo ID */}
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                    isLocked
+                      ? 'bg-google-green/15 text-google-green border-google-green'
+                      : 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-400'
+                  }`}
+                >
+                  {isLocked ? 'Status: Submitted & Final' : 'Status: Draft (In Progress)'}
+                </span>
+
+                <div className="text-[10px] text-google-grey dark:text-gray-400 flex items-center gap-1 font-medium">
+                  <Clock className="w-3 h-3" />
+                  <span>{lastSavedTime ? `Last saved at ${lastSavedTime}` : 'All changes saved'}</span>
+                </div>
+
+                {/* Visible Error State with Retry Button */}
+                {saveError && (
+                  <div className="flex items-center gap-1.5 bg-red-50 dark:bg-red-950/40 border border-google-red text-google-red text-[11px] font-bold px-2 py-0.5 rounded-lg">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>Save failed.</span>
+                    <button
+                      type="button"
+                      onClick={onSaveDraft}
+                      className="underline hover:text-red-800 ml-1 flex items-center gap-0.5"
+                    >
+                      <RefreshCw className="w-2.5 h-2.5" />
+                      <span>Retry</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <button
             onClick={onLogout}
             className="p-2 text-google-grey hover:text-google-red border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            title="Log out (your progress remains saved in the database)"
+            title="Log out (your card remains saved in the database)"
             aria-label="Logout"
           >
             <LogOut className="w-4 h-4" />
@@ -146,7 +200,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
       </div>
 
       {/* ========================================================
-           3x3 BINGO GRID WITH FLIP ANIMATION
+           3x3 BINGO GRID WITH FLIP ANIMATION & FIXED ASPECT RATIO
            ======================================================== */}
       <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mb-6">
         {card.tiles.map((tile, idx) => (
@@ -156,7 +210,8 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
             index={idx}
             isFlipped={flippedIndex === idx}
             onToggleFlip={onToggleFlip}
-            onUploadPhoto={onUploadPhoto}
+            onInitiateCrop={onInitiateCrop}
+            onAdjustPhoto={onAdjustPhoto}
             onRemovePhoto={onRemovePhoto}
             uploadProgress={uploadProgress[idx]}
             isLocked={isLocked}
@@ -178,7 +233,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 border-2 border-google-dark border-t-transparent rounded-full animate-spin" />
-                <span>Saving to Database...</span>
+                <span>Syncing Database...</span>
               </>
             ) : (
               <>
@@ -204,7 +259,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
           {isLocked ? (
             <>
               <CheckCircle2 className="w-4 h-4" />
-              <span>SUBMITTED & LOCKED</span>
+              <span>SUBMITTED & FINAL</span>
             </>
           ) : canSubmit ? (
             <>

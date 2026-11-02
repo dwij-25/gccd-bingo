@@ -1,9 +1,8 @@
 import { tempDatabase } from './tempDatabase.js';
 
-const metaEnv = (import.meta as any).env;
-const VITE_API_URL = metaEnv?.VITE_API_URL;
-const API_BASE = VITE_API_URL ? `${VITE_API_URL}/api` : '/api';
+const API_BASE = '/api';
 const CURRENT_USER_KEY = 'gccd_bingo_active_user_v1';
+const CURRENT_EMAIL_KEY = 'gccd_bingo_active_email_v1';
 
 export class ApiError extends Error {
   public status: number;
@@ -24,51 +23,56 @@ function getActiveUserId(): string | null {
   return localStorage.getItem(CURRENT_USER_KEY);
 }
 
-function setActiveUserId(id: string | null) {
+function setActiveUserId(id: string | null, email?: string) {
   if (typeof window === 'undefined') return;
   if (id) {
     localStorage.setItem(CURRENT_USER_KEY, id);
+    if (email) localStorage.setItem(CURRENT_EMAIL_KEY, email.trim().toLowerCase());
   } else {
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(CURRENT_EMAIL_KEY);
   }
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+function getActiveUserEmail(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(CURRENT_EMAIL_KEY);
 }
 
 export const api = {
   async login(name: string, email: string) {
-    // Try backend API first if configured
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ name, email })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.participant?.id) {
-            setActiveUserId(data.participant.id);
-          }
-          return data;
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Try Vercel Serverless / Cloud Database API first
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: cleanName, email: cleanEmail })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.participant?.id) {
+          setActiveUserId(data.participant.id, data.participant.email);
         }
-      } catch (e) {
-        console.warn('Backend API unreachable, falling back to temporary database', e);
+        return data;
       }
+      const errData = await res.json().catch(() => ({}));
+      if (res.status === 400 || res.status === 404) {
+        throw new ApiError(errData.error || 'Login verification failed', res.status);
+      }
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Serverless API call failed, falling back to local database sync', e);
     }
 
-    // Temporary database handler (seamless in-browser persistence)
+    // 2. Fallback to tempDatabase (preserves offline/local storage)
     try {
-      const res = tempDatabase.login(name, email);
-      setActiveUserId(res.participant.id);
+      const res = tempDatabase.login(cleanName, cleanEmail);
+      setActiveUserId(res.participant.id, res.participant.email);
       return {
         success: true,
         participant: res.participant,
@@ -82,123 +86,117 @@ export const api = {
 
   async logout() {
     setActiveUserId(null);
-    if (VITE_API_URL) {
-      try {
-        await fetch(`${API_BASE}/auth/logout`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-      } catch {
-        // ignore
-      }
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch {
+      // ignore
     }
     return { success: true };
   },
 
   async getMe() {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
+    const activeEmail = getActiveUserEmail();
+    if (!activeUserId && !activeEmail) {
       throw new ApiError('Not authenticated', 401);
     }
 
-    // Try backend if active
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
+    try {
+      const query = activeEmail ? `email=${encodeURIComponent(activeEmail)}` : `participantId=${encodeURIComponent(activeUserId || '')}`;
+      const res = await fetch(`${API_BASE}/auth/me?${query}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.participant?.id) {
+          setActiveUserId(data.participant.id, data.participant.email);
+        }
+        return data;
       }
+    } catch {
+      // ignore
     }
 
-    // Fallback to tempDatabase
-    const card = tempDatabase.getCard(activeUserId);
-    const submissions = tempDatabase.getAdminSubmissions().submissions;
-    const sub = submissions.find(s => s.id === card.id);
-    const participant = {
-      id: activeUserId,
-      name: sub?.participant_name || 'Attendee',
-      email: sub?.email || '',
-      organization: sub?.organization || 'Community Member'
-    };
+    if (activeUserId) {
+      const card = tempDatabase.getCard(activeUserId);
+      const sub = tempDatabase.getAdminSubmissions().submissions.find(s => s.id === card.id);
+      return {
+        success: true,
+        participant: {
+          id: activeUserId,
+          name: sub?.participant_name || 'Attendee',
+          email: sub?.email || activeEmail || '',
+          organization: sub?.organization || 'Community Member'
+        },
+        card
+      };
+    }
 
-    return {
-      success: true,
-      participant,
-      card
-    };
+    throw new ApiError('Not authenticated', 401);
   },
 
   async getCard() {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
-      throw new ApiError('Not authenticated', 401);
-    }
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
 
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/card`, { credentials: 'include' });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const res = await fetch(`${API_BASE}/card?participantId=${encodeURIComponent(activeUserId)}`, { credentials: 'include' });
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
     }
 
     const card = tempDatabase.getCard(activeUserId);
     return { success: true, card };
   },
 
-  async uploadTile(tileIndex: number, file: File, onProgress?: (pct: number) => void) {
+  async uploadTile(tileIndex: number, image: string, cropData?: any, onProgress?: (pct: number) => void) {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
-      throw new ApiError('Not authenticated', 401);
-    }
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
 
-    if (onProgress) onProgress(40);
+    if (onProgress) onProgress(35);
 
-    if (VITE_API_URL) {
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-        const res = await fetch(`${API_BASE}/card/tiles/${tileIndex}`, {
-          method: 'PUT',
-          credentials: 'include',
-          body: formData
-        });
-        if (res.ok) {
-          if (onProgress) onProgress(100);
-          return await res.json();
-        }
-      } catch (e) {
-        console.warn('Backend upload failed, saving to temporary database', e);
+    try {
+      const res = await fetch(`${API_BASE}/card/tiles/${tileIndex}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          participantId: activeUserId,
+          image,
+          cropData
+        })
+      });
+
+      if (res.ok) {
+        if (onProgress) onProgress(100);
+        return await res.json();
       }
+      const errData = await res.json().catch(() => ({}));
+      throw new ApiError(errData.error || 'Server upload failed', res.status);
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Server upload failed, falling back to temp database', e);
     }
 
-    const dataUrl = await fileToDataUrl(file);
-    if (onProgress) onProgress(90);
-
-    const result = tempDatabase.uploadTile(activeUserId, tileIndex, dataUrl);
+    // Fallback to local tempDatabase
+    const result = tempDatabase.uploadTile(activeUserId, tileIndex, image);
     if (onProgress) onProgress(100);
-
     return result;
   },
 
   async removeTile(tileIndex: number) {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
-      throw new ApiError('Not authenticated', 401);
-    }
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
 
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/card/tiles/${tileIndex}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const res = await fetch(`${API_BASE}/card/tiles/${tileIndex}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ participantId: activeUserId })
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
     }
 
     return tempDatabase.removeTile(activeUserId, tileIndex);
@@ -206,22 +204,21 @@ export const api = {
 
   async saveDraft(tiles: any[]) {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
-      throw new ApiError('Not authenticated', 401);
-    }
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
 
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/card/save-draft`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tiles })
-        });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const res = await fetch(`${API_BASE}/card/save-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ participantId: activeUserId, tiles })
+      });
+      if (res.ok) return await res.json();
+      const errData = await res.json().catch(() => ({}));
+      throw new ApiError(errData.error || 'Save draft failed', res.status);
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Server save draft failed, saving to temp database', e);
     }
 
     return tempDatabase.saveDraft(activeUserId, tiles);
@@ -229,72 +226,64 @@ export const api = {
 
   async submitCard() {
     const activeUserId = getActiveUserId();
-    if (!activeUserId) {
-      throw new ApiError('Not authenticated', 401);
-    }
+    if (!activeUserId) throw new ApiError('Not authenticated', 401);
 
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/card/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ confirmSubmit: true })
-        });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const res = await fetch(`${API_BASE}/card/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ participantId: activeUserId })
+      });
+      if (res.ok) return await res.json();
+      const errData = await res.json().catch(() => ({}));
+      throw new ApiError(errData.error || 'Submit failed', res.status);
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Server submit failed, submitting to temp database', e);
     }
 
     return tempDatabase.submitCard(activeUserId);
   },
 
   async checkBingo(bingoId: string) {
-    if (VITE_API_URL) {
-      try {
-        const res = await fetch(`${API_BASE}/bingo/${encodeURIComponent(bingoId)}`);
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const res = await fetch(`${API_BASE}/bingo/${encodeURIComponent(bingoId.trim().toUpperCase())}`);
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
     }
 
     return tempDatabase.checkBingo(bingoId);
   },
 
-  // Admin APIs
   async getAdminSubmissions(status?: string, adminKey?: string) {
-    if (VITE_API_URL) {
-      try {
-        const headers: Record<string, string> = {};
-        if (adminKey) headers['x-admin-key'] = adminKey;
-        const url = status ? `${API_BASE}/admin/submissions?status=${status}` : `${API_BASE}/admin/submissions`;
-        const res = await fetch(url, { headers, credentials: 'include' });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const headers: Record<string, string> = {};
+      if (adminKey) headers['x-admin-key'] = adminKey;
+      const url = status ? `${API_BASE}/admin/submissions?status=${status}` : `${API_BASE}/admin/submissions`;
+      const res = await fetch(url, { headers, credentials: 'include' });
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
     }
 
     return tempDatabase.getAdminSubmissions(status);
   },
 
   async adminMarkWinner(bingoId: string, isWinner: boolean, winTier?: string, adminKey?: string) {
-    if (VITE_API_URL) {
-      try {
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (adminKey) headers['x-admin-key'] = adminKey;
-        const res = await fetch(`${API_BASE}/admin/verify-winner`, {
-          method: 'POST',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({ bingoId, isWinner, winTier })
-        });
-        if (res.ok) return await res.json();
-      } catch {
-        // ignore
-      }
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (adminKey) headers['x-admin-key'] = adminKey;
+      const res = await fetch(`${API_BASE}/admin/verify-winner`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ bingoId, isWinner, winTier })
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
     }
 
     return tempDatabase.adminMarkWinner(bingoId, isWinner, winTier);

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Camera, RefreshCw, Trash2, Undo2, CheckCircle2 } from 'lucide-react';
+import { Camera, RefreshCw, Trash2, Undo2, CheckCircle2, Sliders } from 'lucide-react';
 import { BingoTile as BingoTileType } from '../types/bingo.js';
 
 interface BingoTileProps {
@@ -7,7 +7,8 @@ interface BingoTileProps {
   index: number;
   isFlipped: boolean;
   onToggleFlip: (index: number) => void;
-  onUploadPhoto: (index: number, file: File) => Promise<void>;
+  onInitiateCrop: (index: number, imageSrc: string, tileTitle: string) => void;
+  onAdjustPhoto: (index: number) => void;
   onRemovePhoto: (index: number) => Promise<void>;
   uploadProgress?: number;
   isLocked: boolean;
@@ -30,25 +31,30 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   index,
   isFlipped,
   onToggleFlip,
-  onUploadPhoto,
+  onInitiateCrop,
+  onAdjustPhoto,
   onRemovePhoto,
   uploadProgress,
   isLocked
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isDone = tile.status === 'completed' && Boolean(tile.image_url);
+  const isDone = Boolean(tile.image_url && tile.image_url.trim().length > 0);
   const colorClass = COLOR_CLASSES[index] || 'bg-tile-yellow';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      onUploadPhoto(index, file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        onInitiateCrop(index, dataUrl, tile.title);
+      };
+      reader.readAsDataURL(file);
       e.target.value = '';
     }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Avoid flipping if user clicked directly on actionable buttons or inputs
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
       return;
     }
@@ -58,7 +64,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className="relative aspect-square cursor-pointer select-none perspective-1000 group"
+      className="relative aspect-[324/290] cursor-pointer select-none perspective-1000 group w-full"
       role="button"
       tabIndex={0}
       aria-label={`Bingo challenge ${index + 1}: ${tile.title}. Status: ${isDone ? 'Completed' : 'Not finished'}`}
@@ -87,61 +93,60 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              FRONT FACE
              ======================================================== */}
         <div
-          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark dark:border-white/30 p-2.5 sm:p-3 flex flex-col justify-between shadow-brutal transition-transform group-hover:-translate-y-1 ${colorClass}`}
+          className={`absolute inset-0 w-full h-full backface-hidden rounded-2xl border-3 border-google-dark dark:border-white/30 p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal transition-transform group-hover:-translate-y-0.5 ${colorClass} overflow-hidden`}
         >
           {/* Header row: Challenge # and Signal Dot */}
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full relative z-10">
             <span className="text-[10px] sm:text-xs font-black bg-white/90 dark:bg-black/60 px-1.5 py-0.5 rounded border border-google-dark dark:border-white/20">
               #{index + 1}
             </span>
 
             {/* Signal Dot: Red = Not finished, Green = Completed */}
             <div
-              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark ${
+              className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark transition-colors duration-300 ${
                 isDone
-                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.8)]'
-                  : 'bg-google-red animate-pulse shadow-[0_0_8px_rgba(234,67,53,0.8)]'
+                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
+                  : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
               }`}
-              title={isDone ? "Task is Done" : "Not finished"}
+              title={isDone ? 'Task Completed' : 'Not Finished'}
             />
           </div>
 
           {/* Center Content */}
-          <div className="relative flex-1 flex flex-col items-center justify-center text-center my-1">
-            {index === 4 ? (
-              // Center GDG Emblem Tile
+          <div className="relative flex-1 flex flex-col items-center justify-center text-center my-0.5 overflow-hidden">
+            {index === 4 && !isDone ? (
               <div className="flex flex-col items-center justify-center">
                 <img
                   src="/assets/center_gdg_logo.png"
                   alt="GDG Logo"
-                  className="w-14 sm:w-20 h-auto object-contain"
+                  className="w-12 sm:w-16 h-auto object-contain"
                   onError={(e) => {
-                    // Fallback brackets
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
-                <span className="font-black text-xs sm:text-sm text-google-dark dark:text-white mt-1">
+                <span className="font-black text-[11px] sm:text-xs text-google-dark dark:text-white mt-0.5">
                   GCCD Spirit
                 </span>
               </div>
-            ) : (
-              // Standard Challenge Tile
-              <div className="flex flex-col items-center justify-center">
-                <i className={`fas ${tile.icon || 'fa-camera'} text-xl sm:text-2xl text-google-dark dark:text-white mb-1.5`} />
-                <h3 className="font-extrabold text-xs sm:text-sm leading-tight text-google-dark dark:text-white line-clamp-2 px-1">
+            ) : !isDone ? (
+              <div className="flex flex-col items-center justify-center px-1">
+                <i className={`fas ${tile.icon || 'fa-camera'} text-lg sm:text-xl text-google-dark dark:text-white mb-1`} />
+                <h3 className="font-extrabold text-[11px] sm:text-xs leading-tight text-google-dark dark:text-white line-clamp-2">
                   {tile.title}
                 </h3>
               </div>
-            )}
+            ) : null}
 
-            {/* Thumbnail Overlay when Done */}
+            {/* Photo Thumbnail Overlay when Done */}
             {isDone && tile.image_url && (
-              <div
-                className="absolute inset-0 rounded-xl bg-cover bg-center overflow-hidden flex items-end justify-center p-1.5 border border-google-dark/40 shadow-inner"
-                style={{ backgroundImage: `url(${tile.image_url})` }}
-              >
-                <div className="bg-black/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-google-green" />
+              <div className="absolute inset-0 rounded-xl overflow-hidden border border-google-dark/50 bg-black">
+                <img
+                  src={tile.image_url}
+                  alt={tile.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-1 inset-x-1 bg-black/80 backdrop-blur-xs text-white text-[9px] font-bold py-0.5 px-1.5 rounded-md flex items-center justify-center gap-1">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-google-green" />
                   <span>Done</span>
                 </div>
               </div>
@@ -149,7 +154,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           {/* Footer Flip Indicator */}
-          <div className="text-[10px] font-bold uppercase tracking-wider text-google-dark/70 dark:text-white/70 text-center flex items-center justify-center gap-1">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-google-dark/70 dark:text-white/70 text-center flex items-center justify-center gap-1 relative z-10">
             <RefreshCw className="w-2.5 h-2.5" />
             <span>Flip</span>
           </div>
@@ -159,15 +164,15 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              BACK FACE
              ======================================================== */}
         <div
-          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark dark:border-white/30 bg-white dark:bg-gray-800 p-2.5 sm:p-3 flex flex-col justify-between shadow-brutal"
+          className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-3 border-google-dark dark:border-white/30 bg-white dark:bg-gray-800 p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal"
         >
           {/* Top row on Back */}
           <div className="flex items-center justify-between w-full">
             <div
               className={`w-3.5 h-3.5 rounded-full border-2 border-google-dark ${
                 isDone
-                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.8)]'
-                  : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.8)]'
+                  ? 'bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.9)]'
+                  : 'bg-google-red shadow-[0_0_8px_rgba(234,67,53,0.9)]'
               }`}
             />
             <button
@@ -180,35 +185,49 @@ export const BingoTile: React.FC<BingoTileProps> = ({
               title="Flip Back"
               aria-label="Flip Back to Front"
             >
-              <Undo2 className="w-3.5 h-3.5" />
+              <Undo2 className="w-3.5 h-3.5 text-google-dark dark:text-white" />
             </button>
           </div>
 
-          {/* Description & Image Controls */}
+          {/* Description & Action Controls */}
           <div className="flex-1 flex flex-col justify-center items-center text-center my-1 overflow-hidden">
-            <p className="text-[11px] sm:text-xs font-semibold leading-tight text-google-dark dark:text-gray-200 mb-2 px-1">
+            <p className="text-[10px] sm:text-[11px] font-semibold leading-tight text-google-dark dark:text-gray-200 mb-2 px-1 line-clamp-2">
               {tile.description}
             </p>
 
             {isDone && tile.image_url ? (
               <div className="w-full flex flex-col items-center gap-1.5">
-                <div className="w-full h-14 rounded-lg overflow-hidden border border-google-dark bg-black">
+                <div className="w-full h-12 rounded-lg overflow-hidden border border-google-dark bg-black">
                   <img src={tile.image_url} alt="Uploaded challenge" className="w-full h-full object-cover" />
                 </div>
                 {!isLocked && (
-                  <div className="flex gap-1.5 w-full">
+                  <div className="flex gap-1 w-full">
+                    {/* ADJUST BUTTON */}
+                    <button
+                      type="button"
+                      onClick={() => onAdjustPhoto(index)}
+                      className="flex-1 py-1 text-[10px] font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-amber-100 transition"
+                      title="Adjust crop, rotation, or fit"
+                    >
+                      <Sliders className="w-2.5 h-2.5" />
+                      <span>Adjust</span>
+                    </button>
+                    {/* REPLACE BUTTON */}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 py-1 text-[10px] font-bold bg-blue-50 dark:bg-blue-900/30 text-google-blue border border-google-dark rounded-md flex items-center justify-center gap-1 hover:bg-blue-100 transition"
+                      className="flex-1 py-1 text-[10px] font-bold bg-blue-50 dark:bg-blue-900/30 text-google-blue border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-blue-100 transition"
+                      title="Replace photo"
                     >
                       <RefreshCw className="w-2.5 h-2.5" />
                       <span>Replace</span>
                     </button>
+                    {/* REMOVE BUTTON */}
                     <button
                       type="button"
                       onClick={() => onRemovePhoto(index)}
-                      className="flex-1 py-1 text-[10px] font-bold bg-red-50 dark:bg-red-900/30 text-google-red border border-google-dark rounded-md flex items-center justify-center gap-1 hover:bg-red-100 transition"
+                      className="flex-1 py-1 text-[10px] font-bold bg-red-50 dark:bg-red-900/30 text-google-red border border-google-dark rounded-md flex items-center justify-center gap-0.5 hover:bg-red-100 transition"
+                      title="Remove photo"
                     >
                       <Trash2 className="w-2.5 h-2.5" />
                       <span>Remove</span>
@@ -219,11 +238,11 @@ export const BingoTile: React.FC<BingoTileProps> = ({
             ) : (
               <div className="w-full">
                 {uploadProgress ? (
-                  <div className="w-full py-2 flex flex-col items-center gap-1">
+                  <div className="w-full py-1.5 flex flex-col items-center gap-1">
                     <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden border border-google-dark">
                       <div className="bg-google-blue h-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
                     </div>
-                    <span className="text-[10px] font-bold">{uploadProgress}% uploading...</span>
+                    <span className="text-[9px] font-bold text-google-blue">{uploadProgress}% uploading...</span>
                   </div>
                 ) : (
                   <button
@@ -233,7 +252,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     className="w-full py-2 px-2 bg-google-blue text-white text-[11px] sm:text-xs font-bold border-2 border-google-dark rounded-xl flex items-center justify-center gap-1.5 shadow-brutal hover:bg-blue-600 active:shadow-none transition disabled:opacity-50"
                   >
                     <Camera className="w-3.5 h-3.5" />
-                    <span>Take / Upload Pic</span>
+                    <span>Upload Pic</span>
                   </button>
                 )}
               </div>
@@ -241,7 +260,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           </div>
 
           <div className="text-[9px] text-google-grey dark:text-gray-400 font-medium truncate">
-            {tile.hint || 'Google Cloud Challenge'}
+            {isDone ? 'Completed challenge' : 'Pending challenge'}
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ export interface BingoTile {
   status: TileStatus;
   image_url: string | null;
   image_path?: string | null;
+  crop_data?: string | null;
   uploaded_at?: string | null;
   hint?: string;
   icon?: string;

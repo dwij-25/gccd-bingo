@@ -204,7 +204,7 @@ class TempDatabase {
     return this.data.cards[participantId];
   }
 
-  public uploadTile(participantId: string, tileIndex: number, imageDataUrl: string): { success: boolean; imageUrl: string; updatedAt: string; totalCompleted: number; canSubmit: boolean } {
+  public uploadTile(participantId: string, tileIndex: number, imageDataUrl: string, cropData?: any): { success: boolean; imageUrl: string; updatedAt: string; totalCompleted: number; canSubmit: boolean } {
     const card = this.getCard(participantId);
     if (card.status !== 'draft') {
       throw new Error('This card has already been submitted and is locked for editing.');
@@ -217,6 +217,7 @@ class TempDatabase {
 
     const now = new Date().toISOString();
     tile.image_url = imageDataUrl;
+    tile.crop_data = cropData ? (typeof cropData === 'string' ? cropData : JSON.stringify(cropData)) : null;
     tile.status = 'completed';
     tile.uploaded_at = now;
 

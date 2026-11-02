@@ -10,8 +10,10 @@ import { RulesModal } from './components/RulesModal.js';
 import { AdminPanel } from './components/AdminPanel.js';
 import { CardExporter } from './components/CardExporter.js';
 import { ConfettiCanvas } from './components/ConfettiCanvas.js';
+import { ToastProvider, useToast } from './components/Toast.js';
+import { CropAdjustModal, CropData } from './components/CropAdjustModal.js';
 
-export function App() {
+function BingoApp() {
   const [darkMode, setDarkMode] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
@@ -21,18 +23,34 @@ export function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Crop & Adjust Modal State (Issue 4)
+  const [cropModalState, setCropModalState] = useState<{
+    isOpen: boolean;
+    tileIndex: number;
+    imageSrc: string;
+    tileTitle: string;
+    initialCropData?: CropData | null;
+  }>({
+    isOpen: false,
+    tileIndex: 0,
+    imageSrc: '',
+    tileTitle: ''
+  });
+
   const { participant, card, setCard, isLoading, error, login, logout, isAuthenticated } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const {
     card: activeCard,
     flippedTileIndex,
     toggleFlip,
     uploadProgress,
-    uploadPhoto,
+    uploadCroppedPhoto,
     removePhoto,
     saveDraft,
     submitCard,
     isSaving,
+    saveError,
     lastSavedTime
   } = useBingoCard(card);
 
@@ -92,16 +110,53 @@ export function App() {
     }
   };
 
+  // Open crop modal when user selects a file
+  const handleInitiateCrop = (index: number, imageSrc: string, tileTitle: string) => {
+    setCropModalState({
+      isOpen: true,
+      tileIndex: index,
+      imageSrc,
+      tileTitle,
+      initialCropData: null
+    });
+  };
+
+  // Open crop modal when user clicks "Adjust" on an existing photo
+  const handleAdjustPhoto = (index: number) => {
+    const tile = activeCard?.tiles.find(t => t.tile_index === index);
+    if (tile && tile.image_url) {
+      let parsedCrop: CropData | null = null;
+      if (tile.crop_data) {
+        try {
+          parsedCrop = JSON.parse(tile.crop_data);
+        } catch {
+          // ignore
+        }
+      }
+      setCropModalState({
+        isOpen: true,
+        tileIndex: index,
+        imageSrc: tile.image_url,
+        tileTitle: tile.title,
+        initialCropData: parsedCrop
+      });
+    }
+  };
+
+  const handleConfirmCrop = async (croppedDataUrl: string, cropData: CropData) => {
+    await uploadCroppedPhoto(cropModalState.tileIndex, croppedDataUrl, cropData);
+  };
+
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const res = await submitCard();
+      await submitCard();
       setIsSubmitModalOpen(false);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 6000);
       setIsCheckModalOpen(true);
     } catch (err: any) {
-      alert('Submission error: ' + (err.message || 'Failed to submit card'));
+      showError('Submission Error', err.message || 'Failed to submit card');
     } finally {
       setIsSubmitting(false);
     }
@@ -137,7 +192,8 @@ export function App() {
             card={activeCard}
             flippedIndex={flippedTileIndex}
             onToggleFlip={toggleFlip}
-            onUploadPhoto={uploadPhoto}
+            onInitiateCrop={handleInitiateCrop}
+            onAdjustPhoto={handleAdjustPhoto}
             onRemovePhoto={removePhoto}
             onSaveDraft={saveDraft}
             onOpenSubmitModal={() => setIsSubmitModalOpen(true)}
@@ -145,6 +201,7 @@ export function App() {
             onOpenExportModal={() => setIsExportModalOpen(true)}
             onLogout={logout}
             isSaving={isSaving}
+            saveError={saveError}
             lastSavedTime={lastSavedTime}
             uploadProgress={uploadProgress}
           />
@@ -167,6 +224,15 @@ export function App() {
             onClose={() => setIsExportModalOpen(false)}
             participant={participant!}
             card={activeCard}
+          />
+
+          <CropAdjustModal
+            isOpen={cropModalState.isOpen}
+            onClose={() => setCropModalState(prev => ({ ...prev, isOpen: false }))}
+            imageSrc={cropModalState.imageSrc}
+            tileTitle={cropModalState.tileTitle}
+            initialCropData={cropModalState.initialCropData}
+            onConfirmCrop={handleConfirmCrop}
           />
         </>
       )}
@@ -207,5 +273,13 @@ export function App() {
         </a>
       </footer>
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <ToastProvider>
+      <BingoApp />
+    </ToastProvider>
   );
 }
