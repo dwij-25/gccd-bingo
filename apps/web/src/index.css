@@ -44,3 +44,20 @@ html, body, #root {
 .animate-fadeIn {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Custom slim sliding bar for flipped tile on mobile */
+.tile-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4285F4 #f1f3f4;
+}
+.tile-scrollbar::-webkit-scrollbar {
+  width: 3.5px;
+}
+.tile-scrollbar::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 4px;
+}
+.tile-scrollbar::-webkit-scrollbar-thumb {
+  background: #4285F4;
+  border-radius: 4px;
+}

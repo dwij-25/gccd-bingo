@@ -8,7 +8,6 @@ import {
   Image as ImageIcon,
   Store,
   BadgeCheck,
-  Undo2,
   Sliders,
   RefreshCw,
   Trash2
@@ -136,31 +135,28 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
           {!isDone ? (
-            /* Empty State: Responsive Icon + Challenge Title */
-            <div className="w-full h-full flex flex-col items-center justify-center text-center p-2 sm:p-3.5">
-              <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-white/80 border border-google-dark/50 sm:border-2 sm:border-google-dark flex items-center justify-center mb-1 sm:mb-1.5 shadow-xs flex-shrink-0">
-                {getChallengeIcon(index, 'w-3.5 h-3.5 sm:w-5 sm:h-5 text-google-dark')}
+            /* Empty State: Responsive Icon + Challenge Title without harsh truncation */
+            <div className="w-full h-full flex flex-col items-center justify-center text-center p-1.5 sm:p-3">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-white/80 border border-google-dark/50 sm:border-2 sm:border-google-dark flex items-center justify-center mb-1 shadow-xs flex-shrink-0">
+                {getChallengeIcon(index, 'w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-google-dark')}
               </div>
-              <span className="font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-google-dark select-none line-clamp-2">
+              <span className="font-extrabold text-[9px] sm:text-xs md:text-sm leading-snug text-google-dark select-none line-clamp-3 text-center px-0.5">
                 {tile.title}
               </span>
             </div>
           ) : (
             /* Uploaded State: Solid header bar covering the whole top region, photo fills below */
             <>
-              {/* Solid top header bar part of the box itself */}
-              <div className="w-full bg-white border-b-2 border-google-dark px-2 py-1 sm:px-2.5 sm:py-1.5 flex items-center justify-between gap-1.5 flex-shrink-0 z-10 min-h-[26px] sm:min-h-[30px]">
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  {getChallengeIcon(index, 'w-3 h-3 sm:w-3.5 sm:h-3.5 text-google-blue flex-shrink-0')}
-                  <span
-                    className="font-extrabold text-[9px] sm:text-[11px] leading-tight text-google-dark line-clamp-1 select-none truncate"
-                    title={tile.title}
-                  >
-                    {tile.title}
-                  </span>
-                </div>
+              {/* Solid top header bar with full activity title and green status dot */}
+              <div className="w-full bg-white border-b-2 border-google-dark px-1.5 py-1 sm:px-2.5 sm:py-1.5 flex items-center justify-between gap-1 flex-shrink-0 z-10 min-h-[26px]">
+                <span
+                  className="font-black text-[9px] sm:text-[10.5px] leading-tight text-google-dark line-clamp-2 select-none flex-1 text-left"
+                  title={tile.title}
+                >
+                  {tile.title}
+                </span>
                 <div
-                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-google-dark bg-google-green shadow-[0_0_6px_rgba(52,168,83,0.8)] flex-shrink-0"
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-google-dark bg-google-green shadow-[0_0_6px_rgba(52,168,83,0.8)] flex-shrink-0 ml-1"
                   title="Challenge completed"
                 />
               </div>
@@ -186,41 +182,19 @@ export const BingoTile: React.FC<BingoTileProps> = ({
           }`}
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
-          {/* Top row on Back: Status signal dot + Icon + Activity Title + Undo Button */}
-          <div className="flex items-center justify-between w-full gap-1 flex-shrink-0 border-b border-gray-100 pb-1">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <div
-                className={`w-2.5 h-2.5 rounded-full border border-google-dark flex-shrink-0 ${
-                  isDone
-                    ? 'bg-google-green shadow-[0_0_6px_rgba(52,168,83,0.8)]'
-                    : 'bg-google-red shadow-[0_0_6px_rgba(234,67,53,0.8)]'
-                }`}
-              />
-              {getChallengeIcon(index, 'w-3 h-3 text-google-dark flex-shrink-0')}
-              <span className="font-extrabold text-[9px] sm:text-[11px] text-google-dark truncate">
-                {tile.title}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFlip(index);
-              }}
-              className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 border border-google-dark transition cursor-pointer flex-shrink-0"
-              title="Flip Back"
-              aria-label="Flip Back to Front"
-            >
-              <Undo2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-google-dark" />
-            </button>
+          {/* Top row on Back: Clean Full Activity Title (No red/green dots, no icons, no flip button) */}
+          <div className="w-full text-center border-b border-gray-200 pb-1 flex-shrink-0">
+            <h4 className="font-black text-[10.5px] sm:text-xs text-google-dark leading-tight line-clamp-2">
+              {tile.title}
+            </h4>
           </div>
 
-          {/* Action Controls Section */}
+          {/* Action Controls Section with Sliding/Scrollable Bar */}
           {isDone && tile.image_url ? (
-            <div className="w-full flex flex-col gap-1.5 flex-1 justify-center my-auto min-h-0">
+            <div className="flex-1 w-full overflow-y-auto overflow-x-hidden tile-scrollbar py-1 flex flex-col justify-center gap-1.5 min-h-0">
               {!isLocked ? (
                 <>
-                  <div className="grid grid-cols-2 gap-1.5 w-full">
+                  <div className="grid grid-cols-2 gap-1 w-full flex-shrink-0">
                     {/* ADJUST BUTTON */}
                     <button
                       type="button"
@@ -229,7 +203,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                         onAdjustPhoto(index);
                       }}
                       onTouchEnd={(e) => e.stopPropagation()}
-                      className="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                      className="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none"
                       title="Adjust photo crop"
                     >
                       <Sliders className="w-3 h-3 text-amber-700 flex-shrink-0" />
@@ -244,7 +218,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                         onInitiateCamera(index, tile.title);
                       }}
                       onTouchEnd={(e) => e.stopPropagation()}
-                      className="py-1.5 px-1 bg-blue-50 hover:bg-blue-100 text-google-blue border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                      className="py-1.5 px-1 bg-blue-50 hover:bg-blue-100 text-google-blue border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none"
                       title="Retake photo"
                     >
                       <RefreshCw className="w-3 h-3 text-google-blue flex-shrink-0" />
@@ -260,7 +234,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                       onRemovePhoto(index);
                     }}
                     onTouchEnd={(e) => e.stopPropagation()}
-                    className="w-full py-1.5 px-1 bg-red-50 hover:bg-red-100 text-google-red border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs active:shadow-none transition cursor-pointer select-none"
+                    className="w-full py-1.5 px-1 bg-red-50 hover:bg-red-100 text-google-red border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none flex-shrink-0"
                     title="Delete photo"
                   >
                     <Trash2 className="w-3 h-3 text-google-red flex-shrink-0" />
@@ -268,17 +242,17 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                   </button>
                 </>
               ) : (
-                <div className="text-[10px] font-bold text-google-grey text-center">
+                <div className="text-[10px] font-bold text-google-grey text-center py-2">
                   Card Submitted
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col justify-between items-center text-center my-0.5 px-0.5 min-h-0">
-              <p className="text-[9px] sm:text-[10px] font-bold text-google-grey leading-tight line-clamp-2 my-auto px-0.5">
+            <div className="flex-1 w-full overflow-y-auto overflow-x-hidden tile-scrollbar py-1 flex flex-col justify-between items-center text-center min-h-0">
+              <p className="text-[9.5px] sm:text-[10.5px] font-medium text-google-grey leading-tight my-auto px-1">
                 {tile.description}
               </p>
-              <div className="w-full flex-shrink-0">
+              <div className="w-full flex-shrink-0 pt-1">
                 {uploadProgress ? (
                   <div className="w-full py-0.5 flex flex-col items-center gap-1">
                     <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden border border-google-dark">
@@ -298,7 +272,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
                     className="w-full py-1.5 sm:py-2 px-1 bg-google-blue text-white text-[11px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer flex-shrink-0 select-none"
                   >
                     <Camera className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="truncate">Take Photo</span>
+                    <span>Take Photo</span>
                   </button>
                 )}
               </div>
