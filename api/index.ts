@@ -281,22 +281,29 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       // Update tiles (allowed on draft and submitted cards)
       for (const t of tiles) {
         if (typeof t.tile_index === 'number') {
-          const hasImg = t.image_url && t.image_url.trim().length > 0;
-          await client.query(
-            `UPDATE gccd_bingo_tiles 
-             SET image_url = $1,
-                 crop_data = $2,
-                 status = $3,
-                 uploaded_at = CASE WHEN $1 IS NOT NULL AND LENGTH($1) > 0 THEN COALESCE(uploaded_at, NOW()) ELSE NULL END
-             WHERE card_id = $4 AND tile_index = $5`,
-            [
-              hasImg ? t.image_url : null,
-              t.crop_data ? JSON.stringify(t.crop_data) : null,
-              hasImg ? 'completed' : 'not_finished',
-              card.id,
-              t.tile_index
-            ]
-          );
+          const hasImg = Boolean(t.image_url && t.image_url.trim().length > 0);
+          if (hasImg) {
+            const cropVal = t.crop_data ? (typeof t.crop_data === 'string' ? t.crop_data : JSON.stringify(t.crop_data)) : null;
+            await client.query(
+              `UPDATE gccd_bingo_tiles 
+               SET image_url = $1,
+                   crop_data = $2,
+                   status = 'completed',
+                   uploaded_at = COALESCE(uploaded_at, NOW())
+               WHERE card_id = $3 AND tile_index = $4`,
+              [t.image_url.trim(), cropVal, card.id, t.tile_index]
+            );
+          } else {
+            await client.query(
+              `UPDATE gccd_bingo_tiles 
+               SET image_url = NULL,
+                   crop_data = NULL,
+                   status = 'not_finished',
+                   uploaded_at = NULL
+               WHERE card_id = $1 AND tile_index = $2`,
+              [card.id, t.tile_index]
+            );
+          }
         }
       }
 
