@@ -537,6 +537,46 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       });
     }
 
+    // 7.1 PUBLIC: GET TOP 10 WINNERS
+    if (pathname === '/winners' && method === 'GET') {
+      const winnersRes = await client.query(`
+        SELECT 
+          c.bingo_id,
+          c.status,
+          c.win_tier,
+          c.total_completed,
+          c.submitted_at,
+          c.updated_at,
+          p.name,
+          p.email,
+          p.organization
+        FROM gccd_bingo_cards c
+        JOIN gccd_participants p ON c.participant_id = p.id
+        WHERE c.status = 'winner'
+        ORDER BY c.updated_at ASC
+        LIMIT 10
+      `);
+
+      const winners = winnersRes.rows.map((row, idx) => ({
+        rank: idx + 1,
+        bingoId: row.bingo_id,
+        name: row.name,
+        email: row.email,
+        organization: row.organization,
+        winTier: row.win_tier || 'Grand Winner 🏆',
+        submittedAt: row.submitted_at,
+        evaluatedAt: row.updated_at
+      }));
+
+      return sendJson(res, 200, {
+        evaluated: winners.length > 0,
+        message: winners.length > 0 
+          ? 'Official Top 10 Winners evaluated!' 
+          : 'Please wait till the results are being counted or evaluated.',
+        winners
+      });
+    }
+
     // 8. ADMIN: GET SUBMISSIONS & STATS
     if (pathname === '/admin/submissions' && method === 'GET') {
       const headerKey = req.headers['x-admin-key'];

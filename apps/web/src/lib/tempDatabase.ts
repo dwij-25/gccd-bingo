@@ -423,6 +423,31 @@ class TempDatabase {
       winTier: winTier || (isWinner ? 'Verified Winner' : 'Submitted')
     };
   }
+
+  public getWinners(): { evaluated: boolean; message: string; winners: any[] } {
+    const rawSubs = this.getAdminSubmissions().submissions;
+    const winners = rawSubs
+      .filter((s: any) => s.status === 'winner')
+      .slice(0, 10)
+      .map((s: any, idx: number) => ({
+        rank: idx + 1,
+        bingoId: s.bingo_id,
+        name: s.name,
+        email: s.email,
+        organization: s.organization,
+        winTier: s.win_tier || 'Grand Winner 🏆',
+        submittedAt: s.submitted_at,
+        evaluatedAt: s.updated_at
+      }));
+
+    return {
+      evaluated: winners.length > 0,
+      message: winners.length > 0
+        ? 'Official Top 10 Winners evaluated!'
+        : 'Please wait till the results are being counted or evaluated.',
+      winners
+    };
+  }
 }
 
 export const tempDatabase = new TempDatabase();

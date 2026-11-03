@@ -249,26 +249,15 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
            SECONDARY ACTION CONTROLS
            ======================================================== */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2.5 sm:pt-3 border-t border-gray-200 w-full">
-        {/* View Submission and Win Status */}
+        {/* View Results & Winners */}
         <button
           type="button"
-          disabled={!allGreen && !isSubmitted}
           onClick={onOpenCheckModal}
-          className={`w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs font-bold border-2 rounded-full flex items-center justify-center gap-2 transition ${
-            allGreen || isSubmitted
-              ? 'bg-tile-yellow text-google-dark border-google-dark shadow-brutal hover:bg-yellow-300 cursor-pointer'
-              : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed opacity-60'
-          }`}
-          title={
-            allGreen || isSubmitted
-              ? 'View your submission details and win evaluation'
-              : 'Complete all 8 challenges (turn all dots green) to unlock submission and win status'
-          }
+          className="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs font-black border-2 border-google-dark rounded-full flex items-center justify-center gap-2 bg-tile-yellow text-google-dark shadow-brutal hover:bg-yellow-300 transition cursor-pointer select-none"
+          title="View evaluated GCCD Bingo Top 10 Winners and results"
         >
-          <Trophy className={`w-3.5 h-3.5 ${allGreen || isSubmitted ? 'text-google-dark' : 'text-gray-400'}`} />
-          <span>
-            {allGreen || isSubmitted ? 'View Submission & Win Status 🏆' : `View Submission & Win (Need ${totalChallenges - completedCount} more)`}
-          </span>
+          <Trophy className="w-3.5 h-3.5 text-google-dark" />
+          <span>View Results & Winners 🏆</span>
         </button>
 
         {/* Download A4 Card PNG: Available after submission or all green */}

@@ -279,6 +279,17 @@ export const api = {
     return tempDatabase.checkBingo(bingoId);
   },
 
+  async getWinners() {
+    try {
+      const res = await fetch(`${API_BASE}/winners`);
+      if (res.ok) return await res.json();
+    } catch {
+      // ignore
+    }
+
+    return tempDatabase.getWinners();
+  },
+
   async getAdminSubmissions(status?: string, adminKey?: string) {
     try {
       const headers: Record<string, string> = {};

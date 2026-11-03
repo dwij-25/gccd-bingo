@@ -263,11 +263,13 @@ function BingoApp() {
         onClose={() => setIsRulesModalOpen(false)}
       />
 
-      {/* View Submission and Win Status Modal */}
+      {/* View Results and Winners Modal */}
       <CheckResultModal
         isOpen={isCheckModalOpen}
         onClose={() => setIsCheckModalOpen(false)}
         defaultBingoId={activeCard?.bingo_id || ''}
+        currentParticipant={participant}
+        currentCard={activeCard}
       />
 
       {/* Protected Organizer Admin Panel (Accessible via direct URL /admin or ?admin=true) */}

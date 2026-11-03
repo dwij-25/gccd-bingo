@@ -3,6 +3,7 @@ import { api } from '../lib/api.js';
 import { BingoCard, BingoTile } from '../types/bingo.js';
 import { useToast } from '../components/Toast.js';
 import { CropData } from '../components/CropAdjustModal.js';
+import { isFirebaseConfigured, uploadToFirebaseStorage, syncCardToFirestore } from '../lib/firebase.js';
 
 export function useBingoCard(initialCard: BingoCard | null) {
   const [card, setCard] = useState<BingoCard | null>(initialCard);
@@ -101,6 +102,15 @@ export function useBingoCard(initialCard: BingoCard | null) {
         // Automatically flip tile back to the front (main) face once photo is captured/cropped
         setFlippedTileIndex(null);
 
+        // Optional Google Firebase Storage & Firestore Sync
+        if (isFirebaseConfigured && card?.participant_id) {
+          uploadToFirebaseStorage(card.participant_id, tileIndex, croppedDataUrl)
+            .then(fireUrl => {
+              if (fireUrl) console.info('🔥 Image stored in Google Firebase Storage:', fireUrl);
+            })
+            .catch(e => console.warn('Firebase Storage upload skipped:', e));
+        }
+
         const d = new Date();
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         setHasUnsavedChanges(false);
@@ -186,6 +196,10 @@ export function useBingoCard(initialCard: BingoCard | null) {
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         setHasUnsavedChanges(false);
         showSuccess('Draft Saved & Synced', 'All challenge photos are safely saved in the cloud database.');
+
+        if (isFirebaseConfigured && card?.participant_id) {
+          syncCardToFirestore(card.participant_id, card).catch(e => console.warn('Firestore sync skipped:', e));
+        }
       }
       return res;
     } catch (err: any) {
@@ -222,6 +236,10 @@ export function useBingoCard(initialCard: BingoCard | null) {
         setHasUnsavedChanges(false);
         setSaveError(null);
         showSuccess('Bingo Submitted!', `Submission timeline updated to: ${new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+
+        if (isFirebaseConfigured && card?.participant_id) {
+          syncCardToFirestore(card.participant_id, { ...card, status: 'submitted', submitted_at: now }).catch(e => console.warn('Firestore sync skipped:', e));
+        }
       }
       return res;
     } catch (err: any) {
