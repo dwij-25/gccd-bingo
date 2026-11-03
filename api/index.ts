@@ -563,7 +563,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         name: row.name,
         email: row.email,
         organization: row.organization,
-        winTier: row.win_tier || 'Grand Winner 🏆',
+        winTier: idx === 0 ? 'Raffle Grand Winner' : (row.win_tier || 'Grand Winner 🏆'),
         submittedAt: row.submitted_at,
         evaluatedAt: row.updated_at
       }));

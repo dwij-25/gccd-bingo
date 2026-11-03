@@ -435,7 +435,7 @@ class TempDatabase {
         name: s.name,
         email: s.email,
         organization: s.organization,
-        winTier: s.win_tier || 'Grand Winner 🏆',
+        winTier: idx === 0 ? 'Raffle Grand Winner' : (s.win_tier || 'Grand Winner 🏆'),
         submittedAt: s.submitted_at,
         evaluatedAt: s.updated_at
       }));

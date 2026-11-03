@@ -160,6 +160,7 @@ export const BingoTile: React.FC<BingoTileProps> = ({
               {/* Photo Area below header, leaving zero space above */}
               <div className="flex-1 w-full bg-black relative overflow-hidden">
                 <img
+                  key={`${tile.image_url?.slice(0, 30)}_${tile.uploaded_at || ''}`}
                   src={tile.image_url!}
                   alt={tile.title}
                   className="w-full h-full object-cover select-none"

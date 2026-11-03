@@ -62,7 +62,7 @@ export function useBingoCard(initialCard: BingoCard | null) {
 
   // Upload cropped photo (called after CropAdjustModal confirm)
   const uploadCroppedPhoto = useCallback(async (tileIndex: number, croppedDataUrl: string, cropData: CropData) => {
-    if (!card || card.status !== 'draft') return;
+    if (!card) return;
 
     try {
       setUploadProgress(prev => ({ ...prev, [tileIndex]: 30 }));
@@ -134,7 +134,7 @@ export function useBingoCard(initialCard: BingoCard | null) {
 
   // Remove Photo from tile
   const removePhoto = useCallback(async (tileIndex: number) => {
-    if (!card || card.status !== 'draft') return;
+    if (!card) return;
 
     try {
       setSaveError(null);
@@ -180,7 +180,7 @@ export function useBingoCard(initialCard: BingoCard | null) {
 
   // Save Draft manually (Waits for all in-flight uploads to finish)
   const saveDraft = useCallback(async () => {
-    if (!card || card.status !== 'draft' || isSaving) return;
+    if (!card || isSaving) return;
 
     // Check for pending active uploads (fixes race condition)
     if (Object.keys(uploadProgress).length > 0) {

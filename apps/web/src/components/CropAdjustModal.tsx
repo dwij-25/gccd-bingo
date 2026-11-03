@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Point, Area } from 'react-easy-crop';
 import { RotateCw, Check, X, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
@@ -88,6 +88,16 @@ export const CropAdjustModal: React.FC<CropAdjustModalProps> = ({
   const [rotation, setRotation] = useState(initialCropData?.rotation || 0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCrop(initialCropData?.crop || { x: 0, y: 0 });
+      setZoom(initialCropData?.zoom || 1);
+      setRotation(initialCropData?.rotation || 0);
+      setCroppedAreaPixels(null);
+      setIsProcessing(false);
+    }
+  }, [isOpen, imageSrc, initialCropData]);
 
   const onCropComplete = useCallback((_croppedArea: Area, currentCroppedAreaPixels: Area) => {
     setCroppedAreaPixels(currentCroppedAreaPixels);

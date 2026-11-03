@@ -191,11 +191,15 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
 
                   <div className="my-2.5 inline-flex items-center gap-2 px-3 py-1 bg-tile-yellow border-2 border-google-dark rounded-full font-black text-xs sm:text-sm text-google-dark shadow-xs">
                     <Award className="w-4 h-4 text-google-dark" />
-                    <span>Rank #{matchedWinner.rank} Winner • {matchedWinner.winTier}</span>
+                    <span>
+                      {matchedWinner.rank === 1
+                        ? 'Rank #1. Raffle Grand Winner'
+                        : `Rank #${matchedWinner.rank}. ${matchedWinner.winTier || 'Winner'}`}
+                    </span>
                   </div>
 
                   <p className="text-xs sm:text-sm text-google-dark font-extrabold max-w-md mx-auto leading-relaxed">
-                    Your challenge photos have been successfully verified by the organizers! Please head over to the organizer desk / stage to claim your exclusive Google Cloud prize!
+                    Your challenge photos have been successfully verified by the organizers! Please head over to the stage to claim your exclusive Google Cloud prize!
                   </p>
                 </div>
               ) : (
@@ -270,7 +274,7 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
                         {/* Win Tier Badge */}
                         <div className="text-right flex-shrink-0">
                           <span className="inline-block px-2 py-0.5 bg-green-100 text-green-900 border border-green-700 rounded-full text-[10px] font-black">
-                            {w.winTier || 'Winner'}
+                            {w.rank === 1 ? 'Raffle Grand Winner' : (w.winTier || 'Winner')}
                           </span>
                         </div>
                       </div>
