@@ -48,7 +48,7 @@ export const CANONICAL_TILES: DefaultTile[] = [
     index: 4,
     title: "GCCD Community Spirit",
     description: "Pose at the GDG/GCCD photo booth or snap the event banner with the brackets logo!",
-    hint: "Official Community Centerpiece Challenge! { DevFest / GCCD }",
+    hint: "Official Community Centerpiece Challenge! { GCCD Ahmedabad }",
     icon: "fa-code",
     color: "#FFFFFF",
     isCenter: true

@@ -5,7 +5,7 @@
 [![React 19](https://img.shields.io/badge/Frontend-React_19_+_Vite-FBBC05?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript_5-34A853?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-> **A high-energy, mobile-first interactive photo challenge bingo application created for Google Cloud Community Day (GCCD) & DevFest Ahmedabad 2026.**
+> **A high-energy, mobile-first interactive photo challenge bingo application created for Google Cloud Community Day (GCCD) Ahmedabad 2026.**
 >
 > Designed strictly to match the official **GDG Cloud Ahmedabad** visual identity and neobrutalist branding (`Bingo Card (A4)`), featuring real-time photo uploads, client-side image compression, tamper-proof Bingo ID generation, high-res A4 card compositing, an Organizer Admin Portal, and live winner evaluations.
 
@@ -283,7 +283,7 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abcdef
 ## 🤝 Community & Credits
 
 - Organized by **Google Developer Groups Cloud Ahmedabad**
-- Designed for **Google Cloud Community Day (GCCD) & DevFest 2026**
+- Designed for **Google Cloud Community Day (GCCD) 2026**
 - Core Lead: **Dwij Patel** & GDG Cloud Ahmedabad Organizing Team
 
 *Empowering developers to connect, learn, and grow together with Google Cloud.*

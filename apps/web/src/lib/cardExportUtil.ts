@@ -46,7 +46,7 @@ export const PREDEFINED_CAPTIONS: CaptionOption[] = [
   {
     id: 'community-spirit',
     label: 'Community Spirit',
-    tagline: 'Made with Community Spirit • DevFest',
+    tagline: 'Made with Community Spirit • GCCD Ahmedabad',
     theme: 'red',
     bgColor: '#FCE8E6',
     textColor: '#C5221F',
