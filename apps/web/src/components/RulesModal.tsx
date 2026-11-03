@@ -39,7 +39,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               <Camera className="w-4 h-4" /> 1. Completing Challenges
             </h4>
             <p className="text-xs text-google-grey leading-relaxed">
-              Click or tap any of the 9 tiles to flip the card and read its challenge description. Click the picture in real time at the event using your camera and adjust it. Photos are compressed client-side for fast loading.
+              Click or tap any of the 8 challenge tiles to flip the card and read its challenge description. Click the picture in real time at the event using your camera and adjust it. The center tile features the official Google Developer Groups Cloud Ahmedabad emblem.
             </p>
           </div>
 
@@ -79,7 +79,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 • 2 Main Diagonals
               </div>
               <div className="p-2 bg-white border border-gray-300 rounded-xl text-google-green font-bold">
-                • Full Card: 9/9 Complete
+                • Full Card: 8/8 Complete
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               <ShieldAlert className="w-4 h-4" /> 4. Submitting & Verification
             </h4>
             <p className="text-xs text-google-grey leading-relaxed">
-              The <strong>SUBMIT</strong> button activates once all 9 boxes turn green. Submitting generates your official, tamper-proof <strong>Bingo ID</strong> and permanently locks the card. You can then download your customized high-resolution A4 Bingo card and visit the GCCD Swag Desk to claim your prizes!
+              The <strong>SUBMIT</strong> button activates once all 8 challenge boxes turn green. Submitting generates your official, tamper-proof <strong>Bingo ID</strong> and registers your card. You can then download your customized high-resolution A4 Bingo card and visit the stage to claim your prizes once winners are evaluated!
             </p>
           </div>
         </div>

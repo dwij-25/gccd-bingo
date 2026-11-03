@@ -8,16 +8,18 @@
 
 ## 🌟 Highlights & Features
 - **Roster-Authenticated Access**: Participants enter their registered Name & Email; verified against the event database.
-- **3x3 Flip Card Grid**: Desktop click to flip; mobile tap or touch swipe to flip with smooth 3D CSS perspective transforms.
-- **Real-Time Signal Dots**:
-  - 🔴 **Red Dot**: Challenge Not Finished.
+- **3x3 Flip Card Grid (8 Challenges + 1 Center Emblem)**: Desktop click to flip; mobile tap or touch swipe to flip with smooth 3D CSS perspective transforms. Center tile showcases the official Google Developer Groups Cloud Ahmedabad emblem.
+- **Real-Time Signal Status**:
   - 🟢 **Green Dot**: Challenge Completed with uploaded photo.
-- **Client-Side Image Optimization**: Automatically scales down massive 48MP smartphone photos to max 1600px before uploading, saving attendee cellular data.
-- **Persistent Draft Saving**: Real-time auto-save on photo capture plus manual "Save Draft" button with "Saved at HH:MM" timestamp indicators and browser unload safety checks.
-- **Submission Lock & Human-Friendly Bingo ID**: Unlock submission only once 9/9 challenges are green; generates unique `GCCD-7K4M-92QX` codes for raffle verification.
-- **In-Browser A4 Card Compositor**: Attendees download an A4 PNG poster with their photos, name, email, and Bingo ID embedded directly into the official template.
-- **Protected Organizer Admin Dashboard**: Filter submissions, inspect challenge photos, award raffle winners, and import/export attendee rosters via `.xlsx` or `.csv`.
-- **Zero Asset Audio Synthesizer**: Delightful, lightweight chimes and fanfares synthesized in real-time via the Web Audio API with a one-click mute toggle.
+  - Transparent header overlay showing challenge title and completion status without obstructing the photo.
+- **Client-Side Camera & Image Optimization**: Native HTML5 camera capture with instant retake and cropping. Compresses images client-side for rapid uploads over venue Wi-Fi/cellular data.
+- **Retake & Resubmit Workflow**: Attendees can retake photos anytime; replacing a photo automatically purges the previous image from the database. Submitted cards feature a direct **Resubmit Bingo** option.
+- **Persistent Draft Saving**: Real-time save on photo capture plus "Save Draft" button with timestamp indicators and browser unload safety checks.
+- **Submission & Human-Friendly Bingo ID**: Unlocks submission once all **8/8 challenges** are completed; generates unique `GCCD-7K4M-92QX` codes for verification.
+- **Live Results & Top 10 Winners Leaderboard**: Displays real-time evaluation status (*"Please wait till the results are being counted or evaluated."*) and announces the official Top 10 Winners with **Rank #1. Raffle Grand Winner** and stage prize instructions.
+- **In-Browser A4 Card Compositor**: Attendees download high-resolution A4 PNG cards with their photos, name, email, and Bingo ID embedded directly into the official template.
+- **Responsive Admin Panel**: Clean dashboard optimized for mobile and desktop with 2×2 metric counters, horizontal table swiping, 1-click A4 card exports, and winner declarations.
+- **Google Firebase Integration**: Turnkey adapter for **Google Cloud Firestore** (real-time database) and **Firebase Cloud Storage** (high-res photo storage).
 - **Dual Deployment Options**: Deploy as a standalone subdomain or embed seamlessly into your existing community website via responsive iframe.
 
 ---
