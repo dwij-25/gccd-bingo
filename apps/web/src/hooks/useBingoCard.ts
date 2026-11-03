@@ -115,10 +115,11 @@ export function useBingoCard(initialCard: BingoCard | null) {
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         setHasUnsavedChanges(false);
         setSaveError(null);
-        showSuccess('Photo Saved', `Challenge #${tileIndex + 1} completed and saved to database.`);
+        const challengeTitle = card.tiles.find(t => t.tile_index === tileIndex)?.title || 'Challenge';
+        showSuccess('Photo Saved', `${challengeTitle} completed.`);
       }
     } catch (err: any) {
-      const msg = err.message || 'Failed to save photo to database.';
+      const msg = err.message || 'Failed to save photo.';
       setSaveError(msg);
       showError('Upload Error', msg);
       throw err;
@@ -195,7 +196,7 @@ export function useBingoCard(initialCard: BingoCard | null) {
         const d = new Date(res.savedAt || Date.now());
         setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         setHasUnsavedChanges(false);
-        showSuccess('Draft Saved & Synced', 'All challenge photos are safely saved in the cloud database.');
+        showSuccess('Draft Saved', 'All challenge photos have been saved.');
 
         if (isFirebaseConfigured && card?.participant_id) {
           syncCardToFirestore(card.participant_id, card).catch(e => console.warn('Firestore sync skipped:', e));

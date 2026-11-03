@@ -191,30 +191,34 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
            ACTION BAR: SAVE DRAFT & SUBMIT / RESUBMIT
            ======================================================== */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 mb-3 sm:mb-4 w-full">
-        <button
-          type="button"
-          onClick={onSaveDraft}
-          disabled={isSaving}
-          className="w-full sm:w-auto px-6 py-3 sm:py-3.5 bg-white text-google-dark font-black text-sm border-2 sm:border-3 border-google-dark rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 shadow-brutal hover:bg-gray-50 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition cursor-pointer"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-google-dark border-t-transparent rounded-full animate-spin" />
-              <span>Syncing Database...</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 text-google-blue" />
-              <span>Save Draft</span>
-            </>
-          )}
-        </button>
+        {/* Save Draft is ONLY visible for active drafts before submission */}
+        {!isSubmitted && (
+          <button
+            type="button"
+            onClick={onSaveDraft}
+            disabled={isSaving}
+            className="w-full sm:w-auto px-6 py-3 sm:py-3.5 bg-white text-google-dark font-black text-sm border-2 sm:border-3 border-google-dark rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 shadow-brutal hover:bg-gray-50 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition cursor-pointer"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-google-dark border-t-transparent rounded-full animate-spin" />
+                <span>Saving Draft...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 text-google-blue" />
+                <span>Save Draft</span>
+              </>
+            )}
+          </button>
+        )}
 
+        {/* Submit or Resubmit Bingo Button */}
         <button
           type="button"
           onClick={onOpenSubmitModal}
           disabled={!allGreen}
-          className={`w-full sm:w-auto px-8 py-3 sm:py-3.5 font-black text-sm tracking-wide border-2 sm:border-3 border-google-dark rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 transition ${
+          className={`w-full ${isSubmitted ? 'sm:w-auto sm:min-w-[280px]' : 'sm:w-auto'} px-8 py-3 sm:py-3.5 font-black text-sm tracking-wide border-2 sm:border-3 border-google-dark rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 transition ${
             allGreen
               ? 'bg-google-green text-white shadow-brutal hover:bg-green-600 active:shadow-none cursor-pointer'
               : 'bg-gray-200 text-gray-500 border-gray-400 cursor-not-allowed opacity-75'

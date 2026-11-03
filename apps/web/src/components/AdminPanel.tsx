@@ -266,7 +266,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         </span>
                       </td>
                       <td className="p-2.5 sm:p-3 font-extrabold text-google-dark">
-                        {sub.total_completed || 0} / 9
+                        {Math.min(8, sub.total_completed || 0)} / 8
                       </td>
                       <td className="p-2.5 sm:p-3 text-google-grey text-[10.5px]">
                         {sub.submitted_at ? new Date(sub.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}

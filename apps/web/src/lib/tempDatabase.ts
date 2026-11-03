@@ -332,7 +332,7 @@ class TempDatabase {
     const matchedLines = LINES.filter(line => line.indices.every(idx => completed.has(idx))).map(l => l.name);
 
     let winTier = 'Submitted — Under Review';
-    if (completed.size === 9) {
+    if (completed.size === 8) {
       winTier = 'Grand Full-Card Champion 🌟';
     } else if (matchedLines.length >= 3) {
       winTier = 'Triple Line Winner 🏆';
@@ -343,8 +343,8 @@ class TempDatabase {
     }
 
     return {
-      isWinner: card.status === 'winner' || completed.size === 9,
-      fullHouse: completed.size === 9,
+      isWinner: card.status === 'winner' || completed.size === 8,
+      fullHouse: completed.size === 8,
       linesCount: matchedLines.length,
       winTier,
       lines: matchedLines
@@ -400,7 +400,7 @@ class TempDatabase {
     const stats = {
       totalParticipants: this.data.participants.length,
       totalSubmissions: submissions.filter(s => s.status === 'submitted' || s.status === 'winner').length,
-      totalCompleted: submissions.filter(s => s.total_completed === 9).length,
+      totalCompleted: submissions.filter(s => s.total_completed >= 8).length,
       totalWinners: submissions.filter(s => s.status === 'winner').length
     };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Award, Sparkles, RefreshCw, X, Search, Check, Hourglass, ArrowRight } from 'lucide-react';
+import { Trophy, Award, Sparkles, RefreshCw, X, Hourglass } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { Participant, BingoCard } from '../types/bingo.js';
 
@@ -34,21 +34,11 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
   const [statusMessage, setStatusMessage] = useState('Please wait till the results are being counted or evaluated.');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Optional manual lookup
-  const [showManualLookup, setShowManualLookup] = useState(false);
-  const [searchId, setSearchId] = useState(defaultBingoId || currentCard?.bingo_id || '');
-  const [lookupResult, setLookupResult] = useState<any | null>(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-
   useEffect(() => {
     if (isOpen) {
       loadWinners();
-      if (defaultBingoId || currentCard?.bingo_id) {
-        setSearchId(defaultBingoId || currentCard?.bingo_id || '');
-      }
     }
-  }, [isOpen, defaultBingoId, currentCard]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -67,23 +57,6 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
       setIsEvaluated(false);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleManualSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchId.trim()) return;
-
-    setLookupLoading(true);
-    setLookupError(null);
-    try {
-      const data = await api.checkBingo(searchId.trim());
-      setLookupResult(data);
-    } catch (err: any) {
-      setLookupResult(null);
-      setLookupError(err.message || 'No bingo card found with this ID');
-    } finally {
-      setLookupLoading(false);
     }
   };
 
@@ -181,7 +154,7 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
                     <div className="p-2 bg-white border border-gray-300 rounded-xl">
                       <span className="text-[9.5px] uppercase font-black text-google-grey block">Challenges Done</span>
                       <span className="text-xs sm:text-sm font-black text-google-dark">
-                        {currentCard.total_completed} / 9 Complete
+                        {Math.min(8, currentCard.total_completed)} / 8 Complete
                       </span>
                     </div>
                     <div className="p-2 bg-white border border-gray-300 rounded-xl">
@@ -307,56 +280,6 @@ export const CheckResultModal: React.FC<CheckResultModalProps> = ({
               </div>
             </div>
           )}
-
-          {/* Optional: Check Individual Card Lookup Toggle */}
-          <div className="pt-2 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => setShowManualLookup(v => !v)}
-              className="text-[11px] font-black text-google-blue hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Search className="w-3 h-3" />
-              <span>{showManualLookup ? 'Hide Card Lookup' : 'Look up another Bingo ID status'}</span>
-            </button>
-
-            {showManualLookup && (
-              <form onSubmit={handleManualSearch} className="flex gap-1.5 mt-2 animate-fadeIn">
-                <input
-                  type="text"
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value.toUpperCase())}
-                  placeholder="e.g. GCCD-9GRH-L37X"
-                  className="flex-1 px-3 py-1.5 bg-gray-50 border-2 border-google-dark rounded-xl text-xs font-mono font-bold uppercase focus:outline-none focus:border-google-blue"
-                />
-                <button
-                  type="submit"
-                  disabled={lookupLoading}
-                  className="px-3 py-1.5 bg-google-blue text-white text-xs font-black border-2 border-google-dark rounded-xl shadow-xs hover:bg-blue-600 transition cursor-pointer"
-                >
-                  {lookupLoading ? 'Checking...' : 'Check'}
-                </button>
-              </form>
-            )}
-
-            {lookupError && (
-              <div className="mt-1.5 p-2 bg-red-50 border border-google-red rounded-xl text-[10px] text-google-red font-bold">
-                {lookupError}
-              </div>
-            )}
-
-            {lookupResult && (
-              <div className="mt-2 p-2.5 bg-gray-50 border border-google-dark rounded-xl text-xs space-y-1 animate-fadeIn">
-                <div className="flex justify-between font-black">
-                  <span>{lookupResult.participantName}</span>
-                  <span className="uppercase text-google-blue">{lookupResult.status}</span>
-                </div>
-                <div className="flex justify-between text-google-grey text-[10.5px]">
-                  <span>{lookupResult.bingoId}</span>
-                  <span>{lookupResult.totalCompleted} / 9 challenges</span>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
