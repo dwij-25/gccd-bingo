@@ -8,9 +8,7 @@ import {
   Image as ImageIcon,
   Store,
   BadgeCheck,
-  Sliders,
-  RefreshCw,
-  Trash2
+  RefreshCw
 } from 'lucide-react';
 import { BingoTile as BingoTileType } from '../types/bingo.js';
 
@@ -20,8 +18,8 @@ interface BingoTileProps {
   isFlipped: boolean;
   onToggleFlip: (index: number) => void;
   onInitiateCamera: (index: number, tileTitle: string) => void;
-  onAdjustPhoto: (index: number) => void;
-  onRemovePhoto: (index: number) => Promise<void>;
+  onAdjustPhoto?: (index: number) => void;
+  onRemovePhoto?: (index: number) => Promise<void>;
   uploadProgress?: number;
   isLocked: boolean;
 }
@@ -67,8 +65,6 @@ export const BingoTile: React.FC<BingoTileProps> = ({
   isFlipped,
   onToggleFlip,
   onInitiateCamera,
-  onAdjustPhoto,
-  onRemovePhoto,
   uploadProgress,
   isLocked
 }) => {
@@ -177,107 +173,63 @@ export const BingoTile: React.FC<BingoTileProps> = ({
              BACK FACE
              ======================================================== */}
         <div
-          className={`absolute inset-0 w-full h-full rounded-2xl sm:rounded-3xl border-2 sm:border-3 border-google-dark bg-white p-2 sm:p-2.5 flex flex-col justify-between shadow-brutal overflow-hidden select-none transition-opacity duration-200 ${
+          className={`absolute inset-0 w-full h-full rounded-2xl sm:rounded-3xl border-2 sm:border-3 border-google-dark bg-white p-2 sm:p-3 flex flex-col justify-between shadow-brutal overflow-hidden select-none transition-opacity duration-200 ${
             isFlipped ? 'opacity-100 rotate-y-180 pointer-events-auto' : 'opacity-0 rotate-y-180 pointer-events-none'
           }`}
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
-          {/* Top row on Back: Clean Full Activity Title (No red/green dots, no icons, no flip button) */}
-          <div className="w-full text-center border-b border-gray-200 pb-1 flex-shrink-0">
-            <h4 className="font-black text-[10.5px] sm:text-xs text-google-dark leading-tight line-clamp-2">
-              {tile.title}
-            </h4>
+          {/* Challenge Description (Takes the full space, cleanly centered without repeating title) */}
+          <div className="flex-1 w-full flex items-center justify-center text-center px-1 min-h-0">
+            <p className="font-extrabold text-[10.5px] sm:text-xs md:text-sm text-google-dark leading-snug sm:leading-relaxed select-none">
+              {tile.description}
+            </p>
           </div>
 
-          {/* Action Controls Section with Sliding/Scrollable Bar */}
-          {isDone && tile.image_url ? (
-            <div className="flex-1 w-full overflow-y-auto overflow-x-hidden tile-scrollbar py-1 flex flex-col justify-center gap-1.5 min-h-0">
-              {!isLocked ? (
-                <>
-                  <div className="grid grid-cols-2 gap-1 w-full flex-shrink-0">
-                    {/* ADJUST BUTTON */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAdjustPhoto(index);
-                      }}
-                      onTouchEnd={(e) => e.stopPropagation()}
-                      className="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none"
-                      title="Adjust photo crop"
-                    >
-                      <Sliders className="w-3 h-3 text-amber-700 flex-shrink-0" />
-                      <span>Adjust</span>
-                    </button>
-
-                    {/* RETAKE BUTTON */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onInitiateCamera(index, tile.title);
-                      }}
-                      onTouchEnd={(e) => e.stopPropagation()}
-                      className="py-1.5 px-1 bg-blue-50 hover:bg-blue-100 text-google-blue border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none"
-                      title="Retake photo"
-                    >
-                      <RefreshCw className="w-3 h-3 text-google-blue flex-shrink-0" />
-                      <span>Retake</span>
-                    </button>
-                  </div>
-
-                  {/* DELETE BUTTON */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemovePhoto(index);
-                    }}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                    className="w-full py-1.5 px-1 bg-red-50 hover:bg-red-100 text-google-red border border-google-dark rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none flex-shrink-0"
-                    title="Delete photo"
-                  >
-                    <Trash2 className="w-3 h-3 text-google-red flex-shrink-0" />
-                    <span>Delete</span>
-                  </button>
-                </>
+          {/* Action Button: Retake Photo (when completed) or Take Photo (when empty) */}
+          <div className="w-full flex-shrink-0 pt-1">
+            {uploadProgress ? (
+              <div className="w-full py-1 flex flex-col items-center gap-1">
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden border border-google-dark">
+                  <div className="bg-google-blue h-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                </div>
+                <span className="text-[9px] font-bold text-google-blue">{uploadProgress}% saving...</span>
+              </div>
+            ) : isDone && tile.image_url ? (
+              !isLocked ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onInitiateCamera(index, tile.title);
+                  }}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                  className="w-full py-1.5 sm:py-2 px-1.5 bg-google-blue text-white text-[10.5px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs hover:bg-blue-600 active:shadow-none transition cursor-pointer select-none"
+                  title="Retake photo"
+                >
+                  <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                  <span>Retake Photo</span>
+                </button>
               ) : (
-                <div className="text-[10px] font-bold text-google-grey text-center py-2">
+                <div className="w-full py-1.5 text-center text-[10px] sm:text-xs font-bold text-google-grey bg-gray-100 rounded-xl border border-gray-300">
                   Card Submitted
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 w-full overflow-y-auto overflow-x-hidden tile-scrollbar py-1 flex flex-col justify-between items-center text-center min-h-0">
-              <p className="text-[9.5px] sm:text-[10.5px] font-medium text-google-grey leading-tight my-auto px-1">
-                {tile.description}
-              </p>
-              <div className="w-full flex-shrink-0 pt-1">
-                {uploadProgress ? (
-                  <div className="w-full py-0.5 flex flex-col items-center gap-1">
-                    <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden border border-google-dark">
-                      <div className="bg-google-blue h-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
-                    </div>
-                    <span className="text-[8px] font-bold text-google-blue">{uploadProgress}% saving...</span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={isLocked}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onInitiateCamera(index, tile.title);
-                    }}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                    className="w-full py-1.5 sm:py-2 px-1 bg-google-blue text-white text-[11px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer flex-shrink-0 select-none"
-                  >
-                    <Camera className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>Take Photo</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+              )
+            ) : (
+              <button
+                type="button"
+                disabled={isLocked}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInitiateCamera(index, tile.title);
+                }}
+                onTouchEnd={(e) => e.stopPropagation()}
+                className="w-full py-1.5 sm:py-2 px-1.5 bg-google-blue text-white text-[10.5px] sm:text-xs font-black border border-google-dark sm:border-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs hover:bg-blue-600 active:shadow-none transition disabled:opacity-50 cursor-pointer select-none"
+              >
+                <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                <span>Take Photo</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
