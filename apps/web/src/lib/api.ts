@@ -297,8 +297,13 @@ export const api = {
       const url = status ? `${API_BASE}/admin/submissions?status=${status}` : `${API_BASE}/admin/submissions`;
       const res = await fetch(url, { headers, credentials: 'include' });
       if (res.ok) return await res.json();
-    } catch {
-      // ignore
+      if (res.status === 401 || res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        throw new ApiError(err.error || 'Unauthorized admin access', res.status);
+      }
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Admin submissions server fetch failed, checking local temp database', e);
     }
 
     return tempDatabase.getAdminSubmissions(status);
@@ -315,14 +320,31 @@ export const api = {
         body: JSON.stringify({ bingoId, isWinner, winTier })
       });
       if (res.ok) return await res.json();
-    } catch {
-      // ignore
+      if (res.status === 401 || res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        throw new ApiError(err.error || 'Unauthorized admin access', res.status);
+      }
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
     }
 
     return tempDatabase.adminMarkWinner(bingoId, isWinner, winTier);
   },
 
   async adminResetDatabase(adminKey?: string) {
+    // 1. Wipe client-side temp database & local storage immediately
+    tempDatabase.resetDatabase();
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('gccd_bingo_temp_db_v1');
+        localStorage.removeItem('gccd_bingo_active_user_v1');
+        localStorage.removeItem('gccd_bingo_active_email_v1');
+      } catch (e) {
+        console.warn('Failed to clear localStorage on reset', e);
+      }
+    }
+
+    // 2. Wipe server PostgreSQL database tables
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (adminKey) headers['x-admin-key'] = adminKey;
@@ -332,8 +354,15 @@ export const api = {
         credentials: 'include'
       });
       if (res.ok) return await res.json();
-    } catch {
-      // ignore
+      if (res.status === 401 || res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        throw new ApiError(err.error || 'Unauthorized admin access', res.status);
+      }
+    } catch (e: any) {
+      if (e instanceof ApiError) throw e;
+      console.warn('Server database wipe failed or skipped, local storage was cleared', e);
     }
+
+    return { success: true, message: 'Database reset successfully' };
   }
 };

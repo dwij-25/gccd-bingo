@@ -7,20 +7,7 @@ interface TempDBData {
 
 const STORAGE_KEY = 'gccd_bingo_temp_db_v1';
 
-const INITIAL_PARTICIPANTS: Participant[] = [
-  { id: 'usr-1', name: 'Dwij Pancholi', email: 'dwij@example.com', organization: 'GCCD Lead' },
-  { id: 'usr-2', name: 'Dwij Pancholi', email: 'dwijpancholi12@gmail.com', organization: 'Community Day Attendee' },
-  { id: 'usr-3', name: 'Priya Sharma', email: 'priya.sharma@gdgcloud.org', organization: 'Cloud Architect' },
-  { id: 'usr-4', name: 'Sarah Jenkins', email: 'sarah.j@google.com', organization: 'Keynote Speaker • Google' },
-  { id: 'usr-5', name: 'Alex Rivera', email: 'alex.rivera@techcorp.io', organization: 'DevOps Specialist' },
-  { id: 'usr-6', name: 'Aarav Patel', email: 'aarav.patel@developer.community', organization: 'Fullstack Engineer' },
-  { id: 'usr-7', name: 'David Chen', email: 'david.chen@cloudbuilders.com', organization: 'GCP Tech Lead' },
-  { id: 'usr-8', name: 'Ananya Rao', email: 'ananya.rao@gdg.org.in', organization: 'Community Organizer' },
-  { id: 'usr-9', name: 'Rohan Mehta', email: 'rohan.mehta@startup.ai', organization: 'ML Researcher' },
-  { id: 'usr-10', name: 'Neha Gupta', email: 'neha.gupta@cloudfest.io', organization: 'Cloud Native Developer' },
-  { id: 'usr-11', name: 'Carlos Rodriguez', email: 'carlos.r@google.dev', organization: 'Developer Advocate • Google' },
-  { id: 'usr-12', name: 'Sneha Kulkarni', email: 'sneha.k@datascience.in', organization: 'Data Engineer' }
-];
+const INITIAL_PARTICIPANTS: Participant[] = [];
 
 const DEFAULT_TILES = [
   {
@@ -398,6 +385,10 @@ class TempDatabase {
     const filtered = statusFilter ? submissions.filter(s => s.status === statusFilter) : submissions;
 
     const stats = {
+      total_participants: this.data.participants.length,
+      active_drafts: submissions.filter(s => s.status === 'draft').length,
+      submitted_count: submissions.filter(s => s.status === 'submitted').length,
+      winners_count: submissions.filter(s => s.status === 'winner').length,
       totalParticipants: this.data.participants.length,
       totalSubmissions: submissions.filter(s => s.status === 'submitted' || s.status === 'winner').length,
       totalCompleted: submissions.filter(s => s.total_completed >= 8).length,
@@ -405,6 +396,22 @@ class TempDatabase {
     };
 
     return { submissions: filtered, stats };
+  }
+
+  public resetDatabase(): void {
+    this.data = {
+      participants: [],
+      cards: {}
+    };
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('gccd_bingo_active_user_v1');
+        localStorage.removeItem('gccd_bingo_active_email_v1');
+      } catch (e) {
+        console.warn('Failed to clear localStorage on reset', e);
+      }
+    }
   }
 
   public adminMarkWinner(bingoId: string, isWinner: boolean, winTier?: string) {

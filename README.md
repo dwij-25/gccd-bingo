@@ -1,183 +1,289 @@
-# 🎯 GCCD Bingo — Production-Ready Community Day Web App
+# 🎯 Google Developer Groups Cloud Ahmedabad — GCCD Bingo Web App
 
-> **An interactive, mobile-first photo challenge bingo application designed for Google Cloud Developer Group Community Day (GCCD) & DevFest.**
+[![Live Application](https://img.shields.io/badge/Live_App-gccd--bingo.vercel.app-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://gccd-bingo.vercel.app)
+[![Google Cloud](https://img.shields.io/badge/Powered_by-Google_Cloud_%26_Firebase-EA4335?style=for-the-badge&logo=firebase&logoColor=white)](https://cloud.google.com/)
+[![React 19](https://img.shields.io/badge/Frontend-React_19_+_Vite-FBBC05?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript_5-34A853?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+> **A high-energy, mobile-first interactive photo challenge bingo application created for Google Cloud Community Day (GCCD) & DevFest Ahmedabad 2026.**
 >
-> Built strictly following the official visual identity of `Bingo Card (A4).pptx.svg` and the architectural specifications of `Structure for GCCD Bingo`.
+> Designed strictly to match the official **GDG Cloud Ahmedabad** visual identity and neobrutalist branding (`Bingo Card (A4)`), featuring real-time photo uploads, client-side image compression, tamper-proof Bingo ID generation, high-res A4 card compositing, an Organizer Admin Portal, and live winner evaluations.
 
 ---
 
-## 🌟 Highlights & Features
-- **Roster-Authenticated Access**: Participants enter their registered Name & Email; verified against the event database.
-- **3x3 Flip Card Grid (8 Challenges + 1 Center Emblem)**: Desktop click to flip; mobile tap or touch swipe to flip with smooth 3D CSS perspective transforms. Center tile showcases the official Google Developer Groups Cloud Ahmedabad emblem.
-- **Real-Time Signal Status**:
-  - 🟢 **Green Dot**: Challenge Completed with uploaded photo.
-  - Transparent header overlay showing challenge title and completion status without obstructing the photo.
-- **Client-Side Camera & Image Optimization**: Native HTML5 camera capture with instant retake and cropping. Compresses images client-side for rapid uploads over venue Wi-Fi/cellular data.
-- **Retake & Resubmit Workflow**: Attendees can retake photos anytime; replacing a photo automatically purges the previous image from the database. Submitted cards feature a direct **Resubmit Bingo** option.
-- **Persistent Draft Saving**: Real-time save on photo capture plus "Save Draft" button with timestamp indicators and browser unload safety checks.
-- **Submission & Human-Friendly Bingo ID**: Unlocks submission once all **8/8 challenges** are completed; generates unique `GCCD-7K4M-92QX` codes for verification.
-- **Live Results & Top 10 Winners Leaderboard**: Displays real-time evaluation status (*"Please wait till the results are being counted or evaluated."*) and announces the official Top 10 Winners with **Rank #1. Raffle Grand Winner** and stage prize instructions.
-- **In-Browser A4 Card Compositor**: Attendees download high-resolution A4 PNG cards with their photos, name, email, and Bingo ID embedded directly into the official template.
-- **Responsive Admin Panel**: Clean dashboard optimized for mobile and desktop with 2×2 metric counters, horizontal table swiping, 1-click A4 card exports, and winner declarations.
-- **Google Firebase Integration**: Turnkey adapter for **Google Cloud Firestore** (real-time database) and **Firebase Cloud Storage** (high-res photo storage).
-- **Dual Deployment Options**: Deploy as a standalone subdomain or embed seamlessly into your existing community website via responsive iframe.
+## 📖 Table of Contents
+
+- [What It Is About](#-what-it-is-about)
+- [How It Works (Attendee Journey)](#-how-it-works-attendee-journey)
+- [Game Rules & Challenges](#-game-rules--challenges)
+- [Organizer Admin Panel](#-organizer-admin-panel)
+  - [How to Access](#how-to-access-the-admin-panel)
+  - [Admin Features & Capabilities](#admin-features--capabilities)
+- [Technology Stack](#-technology-stack)
+- [Google Cloud & Firebase Architecture](#-google-cloud--firebase-architecture)
+- [Repository Structure](#-repository-structure)
+- [Getting Started Locally](#-getting-started-locally)
+- [Environment Configuration](#-environment-configuration)
+- [Deployment Guide](#-deployment-guide)
 
 ---
 
-## 🏗️ Monorepo Structure
+## 💡 What It Is About
+
+**GCCD Bingo** turns tech conferences into an engaging, participatory scavenger hunt. Rather than passively listening to talks, attendees actively explore the venue, network with fellow developers, engage with sponsors, interact with community volunteers, and capture their journey in real time.
+
+### Key Highlights:
+- **Event-Tailored Neobrutalism**: Bold 2px/3px black borders, drop shadows (`shadow-brutal`), and Google Cloud's signature color palette (Google Blue `#4285F4`, Red `#EA4335`, Yellow `#FBBC05`, and Green `#34A853`).
+- **Interactive 3×3 Grid**: 8 diverse photo challenges surrounding the central **Google Developer Groups Cloud Ahmedabad** emblem tile.
+- **Instant Client-Side Image Compression**: Photos taken using mobile cameras are resized and compressed on the client device canvas (under 250 KB) before uploading, ensuring lightning-fast submissions even on crowded venue Wi-Fi or cellular networks.
+- **Permanent High-Res Keepsake**: Attendees can download a customized, print-ready high-resolution **A4 Bingo Card PNG** with all their clicked photos, name, email, and tamper-proof verification ID embedded into the card.
+
+---
+
+## 🚀 How It Works (Attendee Journey)
+
+The entire flow is frictionless, responsive, and requires zero app store installation:
+
+```mermaid
+flowchart TD
+    A["1. Sign In (Name & Email)"] --> B["2. Personalized 3x3 Card Generated"]
+    B --> C["3. Tap Tile & Take Photo via Camera"]
+    C --> D["4. Crop & Client-Side Auto Compress"]
+    D --> E["5. Tile Turns Green (Progress Updates)"]
+    E --> F{"All 8 Challenges Done?"}
+    F -- "No (< 8)" --> G["Auto-Save / Save Draft"]
+    G --> C
+    F -- "Yes (8/8)" --> H["6. SUBMIT BINGO (Tamper-Proof ID Locked)"]
+    H --> I["7. Download Official A4 Card PNG"]
+    H --> J["8. View Results & Claim Prize at Stage"]
+```
+
+### 1. Attendee Sign-In
+- Attendees visit [`https://gccd-bingo.vercel.app`](https://gccd-bingo.vercel.app) on their smartphone.
+- Enter their **Name** and **Email Address**.
+- An attendee profile and unique Bingo ID (e.g. `GCCD-GZMX-2LGX`) are generated and persisted.
+
+### 2. Exploring the 3×3 Challenge Grid
+- The card displays 8 colorful challenge boxes with custom iconography and 1 central brand logo.
+- Tapping any tile flips it smoothly with 3D CSS perspective transforms to reveal the detailed challenge objective.
+
+### 3. Real-Time Photo Capture & Crop Adjuster
+- Tapping the shutter button opens the device camera or file picker.
+- Attendees can frame and adjust their photo in the built-in modal crop adjuster.
+- Photos are compressed into lightweight JPEGs in milliseconds.
+
+### 4. Signal Status & Retake Flexibility
+- Completed tiles feature a **🟢 Green Dot** status indicator and display the photo thumbnail.
+- Tapping a completed tile allows the attendee to tap **Retake** at any point. Retaking updates the photo in real time and automatically deletes the previous image from the database.
+
+### 5. Draft Preservation
+- Progress is automatically saved as a draft on each photo upload.
+- Attendees can also tap the **Save Draft** button at any time.
+
+### 6. Submitting the Completed Bingo (8/8)
+- As soon as all **8 challenge tiles** turn green (`8 / 8 Complete`), the **SUBMIT (8/8)** button activates.
+- Submitting locks the submission into the event database and qualifies the attendee for the raffle and swag distribution.
+- If an attendee wants to swap a photo after submitting, the card provides a **Resubmit Bingo** workflow.
+
+### 7. Results, Live Evaluation & Winner Announcement
+- Attendees tap the **View Results & Winners** modal:
+  - **While evaluation is ongoing**: Displays a status screen:
+    > *"Please wait till the results are being counted or evaluated."*
+    > *"The GCCD organizers are currently reviewing challenge submissions. Top 10 Winners will be announced right here once evaluation is complete."*
+  - **Once organizers verify winners**: The **Official Top 10 Winners Leaderboard** is displayed, headlined by **Rank #1. Raffle Grand Winner**, followed by winners instructed to collect their prizes directly at **the stage**!
+
+### 8. Download High-Resolution A4 Bingo Card
+- Attendees can click **Download Bingo A4 Card** at any time.
+- The in-browser HTML5 Canvas Compositor renders a 300 DPI A4 graphic embedding the attendee's name, email, official Bingo ID, timestamp, and all challenge photos into the official presentation frame.
+
+---
+
+## 🏆 Game Rules & Challenges
+
+The 3×3 grid contains **8 challenge tiles** plus the central community emblem:
+
+| # | Challenge Tile | Color | Icon | Objective |
+| :---: | :--- | :---: | :---: | :--- |
+| **1** | **Selfie with a speaker** | Yellow | 🤳 | Snap a selfie with any conference speaker after their talk. |
+| **2** | **The full auditorium** | Pink | 👥 | Capture a wide photo of the audience and main stage in action. |
+| **3** | **A slide that taught you something** | Blue | 💻 | Photograph an insightful presentation slide from any technical session. |
+| **4** | **Selfie with a volunteer** | Blue | 🤝 | Find an event volunteer helping out and take a friendly selfie. |
+| **★** | **GDG Cloud Ahmedabad** | White | ☁️ | *Center community brand emblem (Non-photo tile).* |
+| **5** | **Selfie with someone new** | Green | 🧑‍🤝‍🧑 | Make a new friend in the community and take a selfie together. |
+| **6** | **Photo booth or standee** | Green | 📸 | Strike a pose at the official GCCD photo booth or venue standee. |
+| **7** | **A sponsor booth** | Yellow | 🏢 | Visit any partner or sponsor booth in the expo area and take a photo. |
+| **8** | **Selfie with your badge** | Pink | 🪪 | Show off your official attendee lanyard and entry badge. |
+
+> **Prize Criteria**: Complete all **8/8 challenges** and submit your card. Organizers verify submitted photos and pick winners for the stage raffle.
+
+---
+
+## 🛡️ Organizer Admin Panel
+
+The Admin Panel provides organizers and community leads with complete real-time oversight of the event.
+
+### How to Access the Admin Panel:
+1. Open your browser and navigate to:
+   - `https://gccd-bingo.vercel.app?admin=true` OR
+   - `https://gccd-bingo.vercel.app/admin`
+2. Enter the **Organizer Secret Key**:
+   ```
+   gccd2026
+   ```
+   *(Or the custom `ADMIN_SECRET_KEY` configured in your environment variables).*
+3. Click **Access Admin Panel**.
+
+### Admin Features & Capabilities:
+
+| Feature | Description |
+| :--- | :--- |
+| **Live Metric Counters** | Four responsive stat cards showing **Total Registered**, **Active Drafts**, **Submitted**, and **Winners** count. |
+| **Filter Tabs** | Instant filtering between `All Attendees`, `Submitted`, `Drafts`, and `Winners`. |
+| **Mobile-Friendly Table** | Horizontal swipe enabled for smartphone screens; shows Name, Email, Bingo ID, Status, Completed Challenge count (`8 / 8`), and Submission Timestamp. |
+| **1-Click A4 Card Export** | Organizers can click **📥 A4 Card** next to any participant (even drafts) to instantly generate and download that attendee's compiled A4 Bingo Card PNG for verification at the swag desk or on stage. |
+| **Winner Verification Toggle** | Click the **🏆 Winner** button to mark or unmark an attendee as an official winner. Marked winners immediately appear in the public Top 10 leaderboard. |
+| **Export CSV** | Download a full spreadsheet (`gccd-bingo-submissions.csv`) with participant names, emails, organizations, Bingo IDs, challenge completion stats, submission times, and winner statuses. |
+| **Reset Database (Clean Slate)** | 1-Click red **Reset DB** button with safety confirmation. Completely purges all participant records, cards, and uploaded photo tiles from the PostgreSQL database and browser storage, ensuring 0 ghost entries remain before the event begins. |
+
+---
+
+## 💻 Technology Stack
+
+### Frontend:
+- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS v3](https://tailwindcss.com/) with Neobrutalism UI presets
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Card Compositor**: In-browser HTML5 2D Canvas rendering high-res 300 DPI A4 graphics
+- **Audio Feedback**: Synthesized Web Audio API sound effects for clicks, camera shutter, and victory fanfares
+
+### Backend & API:
+- **Serverless API**: Vercel Serverless Functions (`api/index.ts`)
+- **Node.js**: TypeScript Express backend architecture
+- **Database**: Serverless PostgreSQL via [Neon](https://neon.tech/) & [Supabase](https://supabase.com/)
+- **Google Cloud / Firebase**: Google Cloud Firestore & Firebase Cloud Storage turnkey support
+
+---
+
+## ☁️ Google Cloud & Firebase Architecture
+
+GCCD Bingo is built to showcase Google Cloud technologies:
+
+- **Google Cloud Firestore**: Real-time NoSQL document store syncing attendee challenge progress across devices.
+- **Firebase Cloud Storage**: Secure, high-durability object storage for high-resolution attendee challenge captures.
+- **Serverless PostgreSQL**: Relational transactional database storing normalized participant rosters, card states, and verification timestamps.
+- **Google Cloud Run / Vercel**: Scalable serverless compute handling high concurrency spikes during conference opening and closing keynotes.
+
+---
+
+## 📁 Repository Structure
 
 ```
 gccd-bingo/
+├── api/
+│   └── index.ts                 # Vercel Serverless API entrypoint (Auth, Cards, Admin, CSV, Reset)
 ├── apps/
-│   ├── web/                     # React + Vite + TypeScript + Tailwind CSS Frontend
+│   ├── web/                     # Frontend Application
 │   │   ├── src/
-│   │   │   ├── components/      # BingoBoard, BingoTile, LoginGate, AdminPanel, etc.
-│   │   │   ├── hooks/           # useAuth, useBingoCard
-│   │   │   ├── lib/             # api.ts, audio.ts, imageCompressor.ts
-│   │   │   └── types/           # Data models & schemas
-│   │   └── public/assets/       # Cropped official SVG branding assets
-│   └── api/                     # Node.js + Express + TypeScript Backend
-│       └── src/
-│           ├── controllers/     # authController, cardController, adminController
-│           ├── middleware/      # auth, rateLimiter, errorHandler
-│           ├── routes/          # authRoutes, cardRoutes, adminRoutes
-│           └── services/        # storageService, bingoService
+│   │   │   ├── components/      # UI Components
+│   │   │   │   ├── AdminPanel.tsx      # Organizer Dashboard with stats & A4 download
+│   │   │   │   ├── BingoBoard.tsx      # 3x3 Neobrutalist challenge board
+│   │   │   │   ├── BingoTile.tsx       # 3D Flip card with camera shutter & retake
+│   │   │   │   ├── CropAdjustModal.tsx # Interactive photo crop & position adjuster
+│   │   │   │   ├── LoginGate.tsx       # Attendee registration & sign-in screen
+│   │   │   │   ├── ResultsModal.tsx    # Live evaluation & Top 10 Winners Leaderboard
+│   │   │   │   ├── RulesModal.tsx      # 8-challenge instructions & prize criteria
+│   │   │   │   └── WinnerCelebration.tsx# Confetti & victory audio fanfare
+│   │   │   ├── lib/             # Utilities
+│   │   │   │   ├── api.ts              # API client with offline temp database fallback
+│   │   │   │   ├── audio.ts            # Web Audio API sound synthesizer
+│   │   │   │   ├── bingoCardGenerator.ts# A4 Canvas Compositor
+│   │   │   │   ├── firebase.ts         # Firebase Cloud Storage & Firestore config
+│   │   │   │   ├── imageCompressor.ts  # Canvas client-side JPEG optimizer
+│   │   │   │   └── tempDatabase.ts     # In-memory & localStorage fallback database
+│   │   │   └── types/           # TypeScript interfaces (Participant, BingoCard, BingoTile)
+│   │   └── public/assets/       # Cropped SVG logos and GDG Cloud Ahmedabad branding
+│   └── api/                     # Dedicated standalone Node.js Express server
 ├── database/
-│   ├── migrations/              # 001_initial_schema.sql (PostgreSQL / Supabase)
-│   ├── seed.sql                 # Sample speakers & attendees
-│   └── import-participants.ts   # CLI Excel/CSV attendee roster importer
-├── docs/                        # ARCHITECTURE, API_REFERENCE, DEPLOYMENT, EMBED_GUIDE
-├── .env.example                 # Production & development environment template
-├── .gitignore
-├── LICENSE                      # MIT
-└── package.json                 # Monorepo workspaces configuration
+│   ├── migrations/              # SQL schema migration scripts
+│   └── seed.sql                 # Sample test attendee roster
+└── README.md                    # Project documentation
 ```
 
 ---
 
-## ⚙️ Environment Variables (`.env`)
-
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `PORT` | API Server Port | `5000` |
-| `NODE_ENV` | Environment mode | `development` / `production` |
-| `CLIENT_ORIGIN` | Allowed Frontend URL | `http://localhost:3000` |
-| `ALLOWED_ORIGINS` | Comma-separated CORS allowed domains | `http://localhost:3000,https://gccd.gdg.community` |
-| `DATABASE_URL` | PostgreSQL connection string (Supabase) | `postgresql://postgres:pass@localhost:5432/gccd_bingo` |
-| `SQLITE_DB_PATH` | Local SQLite fallback database path | `./gccd_bingo.db` |
-| `JWT_SECRET` | Secret key for session cookie signing | Random 32+ char string |
-| `ADMIN_SECRET_KEY` | Organizer panel access password | `admin_gccd_secure_pass_2026` |
-| `STORAGE_PROVIDER` | `local`, `supabase`, or `cloudinary` | `local` |
-
----
-
-## 📥 How to Import Participants from Excel
-
-Organizers can import or update participant rosters using the included CLI script:
-
-```bash
-# 1. Place your Excel (.xlsx, .xls) or .csv file in the database folder
-# Columns accepted: Name, Email Address, Organization, Role
-
-# 2. Run the import script
-npm run import:participants -- database/my_gccd_attendees.xlsx
-```
-
-### Key Import Safety Guarantees:
-- **Case-Insensitive Normalization**: Emails are trimmed and converted to lowercase.
-- **Non-Destructive Upsert**: Re-importing updated attendee spreadsheets **never wipes** existing bingo cards, drafts, or submitted photos (`ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name`).
-
----
-
-## 💻 How to Run Locally
+## 🛠️ Getting Started Locally
 
 ### 1. Prerequisites
-- Node.js `>= 20.0.0`
-- npm `>= 10.0.0`
+- **Node.js**: `v20.x` or later
+- **npm**: `v10.x` or later
+- (Optional) Git
 
-### 2. Install Dependencies
+### 2. Clone Repository & Install Dependencies
 ```bash
+git clone https://github.com/dwij-25/gccd-bingo.git
+cd gccd-bingo
 npm install
 ```
 
-### 3. Run Development Servers
-Run both backend and frontend concurrently with a single command:
+### 3. Run Development Server
 ```bash
-npm run dev
+# Start frontend application on localhost:3000
+npm --workspace=apps/web run dev
 ```
 
-- **Frontend Application**: `http://localhost:3000`
-- **Backend API**: `http://localhost:5000`
-- **API Health Check**: `http://localhost:5000/health`
-
-### 4. Test Accounts for Immediate Verification:
-- **Dwij Patel**: `dwij@example.com` (Speaker)
-- **Sarah Jenkins**: `sarah.j@google.com` (Keynote Speaker)
-- **Aarav Sharma**: `aarav.sharma@techcorp.in` (Attendee)
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🚀 Deployment Steps
+## ⚙️ Environment Configuration
 
-### Backend (Render / Railway / Cloud Run)
-1. Push repository to GitHub.
-2. Link your repository to Render or Railway.
-3. Build Command: `npm run build:api`
-4. Start Command: `npm --workspace=apps/api start`
-5. Set environment variables from `.env.example`.
+Create a `.env` file in the root directory (or in `apps/web/.env`):
 
-### Frontend (Vercel / Netlify)
-1. Import repository on Vercel.
-2. Select Root Directory: `apps/web`.
-3. Set Framework: `Vite`.
-4. Add Environment Variable: `VITE_API_URL=https://your-api.onrender.com`.
-5. Deploy!
+```env
+# Application Port & Mode
+NODE_ENV=production
+PORT=5000
 
----
+# PostgreSQL Database (Neon / Supabase)
+DATABASE_URL=postgresql://user:password@ep-sample-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-## 🌐 How to Embed in Your Main Website
+# Organizer Admin Secret Key
+ADMIN_SECRET_KEY=gccd2026
 
-### Responsive Iframe Embed
-Paste this snippet on your event site:
-```html
-<div style="width: 100%; max-width: 900px; margin: 0 auto; min-height: 950px; border-radius: 24px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.12);">
-  <iframe
-    src="https://bingo.yourcommunity.com"
-    style="width: 100%; height: 950px; border: none;"
-    title="GCCD Photo Bingo"
-    allow="camera; clipboard-write;"
-    loading="lazy"
-  ></iframe>
-</div>
+# Google Firebase Configuration (Optional for cloud storage)
+VITE_FIREBASE_API_KEY=AIzaSy...
+VITE_FIREBASE_AUTH_DOMAIN=gccd-bingo.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=gccd-bingo
+VITE_FIREBASE_STORAGE_BUCKET=gccd-bingo.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abcdef
 ```
 
 ---
 
-## 🐙 Git Initialization & GitHub Push Commands
+## 🚀 Deployment Guide
 
-To initialize this repository and push to your GitHub account:
+### Deploying to Vercel (Recommended)
 
-```bash
-# 1. Initialize Git repository
-git init
+1. Push your code to your GitHub repository.
+2. Go to [Vercel Dashboard](https://vercel.com/) and click **Add New Project**.
+3. Import the `gccd-bingo` repository.
+4. Set the following Build & Output settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `.` (or `apps/web`)
+   - **Build Command**: `npm --workspace=apps/web run build`
+   - **Output Directory**: `apps/web/dist`
+5. Under **Environment Variables**, add:
+   - `DATABASE_URL`: Your Neon PostgreSQL connection string.
+   - `ADMIN_SECRET_KEY`: `gccd2026`
+6. Click **Deploy**. Your app will be live at `https://your-app.vercel.app`!
 
-# 2. Add all files
-git add .
+---
 
-# 3. Commit
-git commit -m "feat: complete production-ready GCCD Bingo monorepo"
+## 🤝 Community & Credits
 
-# 4. Set branch to main
-git branch -M main
+- Organized by **Google Developer Groups Cloud Ahmedabad**
+- Designed for **Google Cloud Community Day (GCCD) & DevFest 2026**
+- Core Lead: **Dwij Patel** & GDG Cloud Ahmedabad Organizing Team
 
-# 5. Add your remote GitHub repository
-git remote add origin https://github.com/YOUR_USERNAME/gccd-bingo.git
-
-# 6. Push to GitHub
-git push -u origin main
-```
+*Empowering developers to connect, learn, and grow together with Google Cloud.*
