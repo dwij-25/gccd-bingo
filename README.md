@@ -1,6 +1,7 @@
 # 🎯 Google Developer Groups Cloud Ahmedabad — GCCD Bingo Web App
 
 [![Live Application](https://img.shields.io/badge/Live_App-gccd--bingo.vercel.app-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://gccd-bingo.vercel.app)
+[![Organization](https://img.shields.io/badge/GitHub_Org-GDG--Cloud--Ahmedabad-202124?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GDG-Cloud-Ahmedabad/gccd-bingo)
 [![Google Cloud](https://img.shields.io/badge/Powered_by-Google_Cloud_%26_Firebase-EA4335?style=for-the-badge&logo=firebase&logoColor=white)](https://cloud.google.com/)
 [![React 19](https://img.shields.io/badge/Frontend-React_19_+_Vite-FBBC05?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript_5-34A853?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -220,7 +221,7 @@ gccd-bingo/
 
 ### 2. Clone Repository & Install Dependencies
 ```bash
-git clone https://github.com/dwij-25/gccd-bingo.git
+git clone https://github.com/GDG-Cloud-Ahmedabad/gccd-bingo.git
 cd gccd-bingo
 npm install
 ```
@@ -250,13 +251,14 @@ DATABASE_URL=postgresql://user:password@ep-sample-pooler.us-east-2.aws.neon.tech
 # Organizer Admin Secret Key
 ADMIN_SECRET_KEY=gccd2026
 
-# Google Firebase Configuration (Optional for cloud storage)
-VITE_FIREBASE_API_KEY=AIzaSy...
-VITE_FIREBASE_AUTH_DOMAIN=gccd-bingo.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=gccd-bingo
-VITE_FIREBASE_STORAGE_BUCKET=gccd-bingo.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abcdef
+# Google Firebase Configuration (gccd-bingo-2026)
+VITE_FIREBASE_API_KEY=AIzaSyDF4EsGIygacq33B6nVF86p24I3ck2vTnc
+VITE_FIREBASE_AUTH_DOMAIN=gccd-bingo-2026.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=gccd-bingo-2026
+VITE_FIREBASE_STORAGE_BUCKET=gccd-bingo-2026.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=293605809828
+VITE_FIREBASE_APP_ID=1:293605809828:web:e9c7caa49eec7c8fda9031
+VITE_FIREBASE_MEASUREMENT_ID=G-FTCV1EYPGW
 ```
 
 ---
