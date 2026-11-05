@@ -2,9 +2,12 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import { Client } from 'pg';
 
 // Neon Cloud PostgreSQL Database connection
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:password@ep-sample-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = process.env.DATABASE_URL || '';
 
 function getDbClient() {
+  if (!DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not configured');
+  }
   return new Client({
     connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false }

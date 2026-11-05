@@ -1,6 +1,9 @@
 const { Client } = require('pg');
 
-const DATABASE_URL = 'postgresql://user:password@ep-sample-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.log('Skipping live database check: DATABASE_URL environment variable is not set.');
+}
 
 const TILE_SLOT_WIDTH = 324;
 const TILE_SLOT_HEIGHT = 290;
@@ -57,6 +60,10 @@ async function runTests() {
   // TEST 2: DATABASE PERSISTENCE, REHYDRATION & CROSS-DEVICE SYNC
   // ----------------------------------------------------
   console.log('--- TEST 2: Database Persistence & Cross-Device Rehydration ---');
+  if (!DATABASE_URL) {
+    console.log('  ⚠️ Skipped database test (DATABASE_URL environment variable is not set).');
+    return;
+  }
   const client = new Client({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
   await client.connect();
 
